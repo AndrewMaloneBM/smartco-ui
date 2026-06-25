@@ -55,7 +55,7 @@ export function IterationSidebar({
               SmartCo
             </div>
             <div className="truncate text-[11px] text-gray-400">
-              Iteration explorer
+              Phased rollout
             </div>
           </div>
         )}
@@ -78,14 +78,17 @@ export function IterationSidebar({
       >
         {ITERATIONS.map((it) => {
           const isActive = it.id === selected;
+          const name = it.step ? `${it.step}: ${it.title}` : it.title;
 
           if (collapsed) {
             return (
               <button
                 key={it.id}
                 onClick={() => onSelect(it.id)}
-                title={`${it.label} — ${STATUS_LABEL[it.status]}`}
-                aria-label={it.label}
+                title={
+                  it.status ? `${name} (${STATUS_LABEL[it.status]})` : name
+                }
+                aria-label={name}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
                   "flex h-9 w-9 items-center justify-center rounded-lg text-sm font-semibold transition-colors",
@@ -100,37 +103,77 @@ export function IterationSidebar({
           }
 
           return (
-            <button
+            <div
               key={it.id}
-              onClick={() => onSelect(it.id)}
-              aria-current={isActive ? "page" : undefined}
               className={cn(
-                "flex w-full flex-col gap-1 rounded-xl border px-3 py-2.5 text-left transition-colors",
+                "flex w-full flex-col gap-1 rounded-xl border px-3 py-2.5 transition-colors",
                 isActive
                   ? "border-brand/30 bg-brand/5"
                   : "border-transparent hover:bg-gray-100"
               )}
             >
-              <span className="flex items-center justify-between gap-2">
-                <span
-                  className={cn(
-                    "text-sm font-medium",
-                    isActive ? "text-brand-dark" : "text-gray-800"
+              <button
+                onClick={() => onSelect(it.id)}
+                aria-current={isActive ? "page" : undefined}
+                className="flex w-full flex-col gap-1 text-left"
+              >
+                <span className="flex items-center justify-between gap-2">
+                  <span
+                    className={cn(
+                      it.step ? "text-xs font-normal text-gray-500" : "text-sm font-bold",
+                      !it.step && (isActive ? "text-brand-dark" : "text-gray-900")
+                    )}
+                  >
+                    {it.step ?? it.title}
+                  </span>
+                  {it.status && (
+                    <span
+                      className={cn(
+                        "shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
+                        STATUS_STYLES[it.status]
+                      )}
+                    >
+                      {STATUS_LABEL[it.status]}
+                    </span>
                   )}
-                >
-                  {it.label}
                 </span>
-                <span
-                  className={cn(
-                    "rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
-                    STATUS_STYLES[it.status]
-                  )}
+                {it.step && (
+                  <span
+                    className={cn(
+                      "text-sm font-bold",
+                      isActive ? "text-brand-dark" : "text-gray-900"
+                    )}
+                  >
+                    {it.title}
+                  </span>
+                )}
+                <span className="text-xs text-gray-500">{it.blurb}</span>
+              </button>
+              {it.prdUrl && (
+                <a
+                  href={it.prdUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex w-fit items-center gap-1 text-[11px] font-medium text-brand hover:underline"
                 >
-                  {STATUS_LABEL[it.status]}
-                </span>
-              </span>
-              <span className="text-xs text-gray-500">{it.blurb}</span>
-            </button>
+                  PRD
+                  <svg
+                    width="11"
+                    height="11"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M7 17 17 7" />
+                    <path d="M7 7h10v10" />
+                  </svg>
+                </a>
+              )}
+            </div>
           );
         })}
       </nav>
