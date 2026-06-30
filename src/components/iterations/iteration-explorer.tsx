@@ -14,6 +14,10 @@ const STORAGE_KEY = "smartco.iteration";
 export function IterationExplorer() {
   const [selected, setSelected] = useState<string>(DEFAULT_ITERATION);
   const [collapsed, setCollapsed] = useState(false);
+  // The active dev scenario applied to the view, and which iteration's scenario
+  // list is currently drilled into in the sidebar (null = default iteration list).
+  const [scenario, setScenario] = useState<string | null>(null);
+  const [scenarioMenu, setScenarioMenu] = useState<string | null>(null);
 
   // Restore the last-viewed iteration after mount (kept out of the initial
   // render to avoid an SSR/client hydration mismatch).
@@ -29,17 +33,32 @@ export function IterationExplorer() {
   const active = ITERATIONS.find((i) => i.id === selected) ?? ITERATIONS[0];
   const ActiveView = active.Component;
 
+  // Switching iterations clears any active scenario and closes the scenario menu.
+  const selectIteration = (id: string) => {
+    setSelected(id);
+    setScenario(null);
+    setScenarioMenu(null);
+  };
+
   return (
     <div className="flex h-screen w-full overflow-hidden">
       <IterationSidebar
         selected={selected}
-        onSelect={setSelected}
+        onSelect={selectIteration}
         collapsed={collapsed}
         onToggle={() => setCollapsed((c) => !c)}
+        scenarioMenu={scenarioMenu}
+        activeScenario={scenario}
+        onOpenScenarios={(id) => {
+          setSelected(id);
+          setScenarioMenu(id);
+        }}
+        onCloseScenarios={() => setScenarioMenu(null)}
+        onSelectScenario={setScenario}
       />
       {/* Not a <main>: the Original view renders Adri's own <main>. */}
       <div className="scrollbar-thin flex-1 overflow-auto">
-        <ActiveView />
+        <ActiveView scenario={scenario} />
       </div>
     </div>
   );

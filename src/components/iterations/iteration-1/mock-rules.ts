@@ -14,7 +14,7 @@ import type { Step1Rule } from "./logic";
  * when you switch the State filter.
  */
 const BASE = {
-  created_by: "loren.bousquet@backmarket.com",
+  created_by: "demo.user@example.com",
   conflicts: [] as string[],
   orderlines_30d: null,
   gmv_30d: null,

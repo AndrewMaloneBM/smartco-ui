@@ -5,15 +5,26 @@
 import type { ComponentType } from "react";
 import { OriginalView } from "./views/original-view";
 import { Iteration1View } from "./views/iteration-1-view";
-import {
-  Step2View,
-  Step3View,
-  Step4View,
-  Step5View,
-} from "./views/step-placeholders";
+import { Iteration2View } from "./views/iteration-2-view";
+import { Step3View, Step4View, Step5View } from "./views/step-placeholders";
+import { STEP2_SCENARIOS } from "./iteration-2/scenarios";
+
+/** Props every iteration view may receive. Views that ignore it stay prop-less. */
+export interface IterationViewProps {
+  /** Active dev scenario id (only Step 2 uses this today). */
+  scenario?: string | null;
+}
+
+/** A dev scenario trigger shown in the sidebar's drill-in scenarios view. */
+export interface ScenarioDef {
+  id: string;
+  label: string;
+  group: string;
+}
 
 export type IterationStatus =
   | "live"
+  | "in-progress"
   | "ready-for-dev"
   | "awaiting-prd"
   | "planned";
@@ -33,7 +44,9 @@ export interface IterationDef {
   status?: IterationStatus;
   /** Confluence PRD this entry maps to (shown as a reference link). Omit when no PRD exists yet. */
   prdUrl?: string;
-  Component: ComponentType;
+  /** Dev scenario triggers — when present, the sidebar shows a "Scenarios" drill-in. */
+  scenarios?: ScenarioDef[];
+  Component: ComponentType<IterationViewProps>;
 }
 
 // Phased rollout of the SmartCo "Smart Commission Management" PRD. Labels and
@@ -66,10 +79,11 @@ export const ITERATIONS: IterationDef[] = [
     title: "Create, update, archive",
     blurb: "Create & manage rules (+ Product ID)",
     badge: "2",
-    status: "planned",
+    status: "in-progress",
     prdUrl:
       "https://backmarket.atlassian.net/wiki/spaces/sxp/pages/6503008637/sub-prd+Step+2+-+Create+update+archive+-+SmartCo",
-    Component: Step2View,
+    scenarios: STEP2_SCENARIOS,
+    Component: Iteration2View,
   },
   {
     id: "step-3",
@@ -104,6 +118,7 @@ export const DEFAULT_ITERATION = ITERATIONS[0].id;
 
 export const STATUS_LABEL: Record<IterationStatus, string> = {
   live: "Live",
+  "in-progress": "Work in progress",
   "ready-for-dev": "Ready for dev",
   "awaiting-prd": "Awaiting PRD",
   planned: "Planned",
@@ -111,6 +126,7 @@ export const STATUS_LABEL: Record<IterationStatus, string> = {
 
 export const STATUS_STYLES: Record<IterationStatus, string> = {
   live: "bg-emerald-100 text-emerald-700",
+  "in-progress": "bg-violet-100 text-violet-700",
   "ready-for-dev": "bg-blue-100 text-blue-700",
   "awaiting-prd": "bg-amber-100 text-amber-700",
   planned: "bg-gray-100 text-gray-500",

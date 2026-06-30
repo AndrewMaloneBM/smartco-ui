@@ -29,12 +29,17 @@ export const revolveVars = {
   "--rev-warning": "hsl(42, 75%, 27%)",
   "--rev-warning-bg": "hsl(38, 90%, 84%)",
   "--rev-danger": "hsl(351, 84%, 39%)",
+  // functional.danger.90 — soft red tint for danger tags/sections
+  "--rev-danger-bg": "hsl(3, 100%, 92%)",
   // focus (functional.focus.50) — used for focus-visible rings
   "--rev-focus": "hsl(225, 100%, 60%)",
   "--rev-focus-low": "hsl(225, 7%, 78%)",
   // typography (real Revolve fonts, loaded via FONTFACE_CSS below)
+  // headingPrimary = IvarSoft serif (page H1s / punchlines); headingSecondary =
+  // BMDupletDSP display sans (section headers); body = BMDupletTXT.
   "--rev-font-body":
     "BMDupletTXT, Helvetica, ui-sans-serif, system-ui, sans-serif",
+  "--rev-font-heading": "IvarSoft, Georgia, 'Times New Roman', serif",
   "--rev-font-display":
     "BMDupletDSP, Helvetica, ui-sans-serif, system-ui, sans-serif",
   // brand / action — real Revolve primary action is near-black (not purple)
@@ -51,6 +56,7 @@ export const FONTFACE_CSS = `
 @font-face{font-family:BMDupletDSP;src:url('https://static-ds.backmarket.com/fonts/latest/BMDupletDSP-Semibold.woff2');font-weight:600;font-style:normal;font-display:swap;}
 @font-face{font-family:BMDupletTXT;src:url('https://static-ds.backmarket.com/fonts/latest/BMDupletTXT-Regular.woff2');font-weight:400;font-style:normal;font-display:swap;}
 @font-face{font-family:BMDupletTXT;src:url('https://static-ds.backmarket.com/fonts/latest/BMDupletTXT-Semibold.woff2');font-weight:600;font-style:normal;font-display:swap;}
+@font-face{font-family:IvarSoft;src:url('https://static-ds.backmarket.com/fonts/latest/IvarSoft-SemiBold.woff2');font-weight:600;font-style:normal;font-display:swap;}
 `;
 
 /** Revolve border radii (radius.xs / sm / md / lg / round). */
@@ -93,4 +99,6 @@ export const REV_CSS = `
 .rev-scope [data-rev-btn="ghost"]:hover:not(:disabled){background:hsla(225,21%,7%,0.06);}
 .rev-scope [data-rev-btn]:disabled{opacity:.4;cursor:default;}
 .rev-scope tbody tr[data-rev-row]:hover{background:var(--rev-static-mid);}
+.rev-scope [data-rev-field]:focus-within{border-color:var(--rev-text-hi);}
+.rev-scope [data-rev-field][data-error="true"]{border-color:var(--rev-danger);}
 `;

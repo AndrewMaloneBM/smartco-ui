@@ -1,6 +1,12 @@
 "use client";
 
-import { useId, useRef, useState, type ReactNode } from "react";
+import {
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { createPortal } from "react-dom";
 
 /**
@@ -26,23 +32,44 @@ export function RevTooltip({
 }) {
   const id = useId();
   const triggerRef = useRef<HTMLSpanElement>(null);
-  const [coords, setCoords] = useState<{ top: number; left: number } | null>(
-    null
-  );
+  const panelRef = useRef<HTMLSpanElement>(null);
+  // Anchor = the trigger's center-x and top, captured on show.
+  const [anchor, setAnchor] = useState<{ top: number; cx: number } | null>(null);
+  // Resolved panel placement after measuring + clamping to the viewport.
+  const [layout, setLayout] = useState<{
+    left: number;
+    top: number;
+    arrow: number;
+  } | null>(null);
 
   const show = () => {
     const el = triggerRef.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
-    setCoords({ top: r.top, left: r.left + r.width / 2 });
+    setAnchor({ top: r.top, cx: r.left + r.width / 2 });
   };
-  const hide = () => setCoords(null);
+  const hide = () => {
+    setAnchor(null);
+    setLayout(null);
+  };
+
+  // Once the panel is in the DOM, measure it and shift it so it never spills
+  // past either viewport edge; the arrow stays pinned under the trigger.
+  useLayoutEffect(() => {
+    if (!anchor || !panelRef.current) return;
+    const margin = 8;
+    const w = panelRef.current.getBoundingClientRect().width;
+    const vw = window.innerWidth;
+    const left = Math.max(margin, Math.min(anchor.cx - w / 2, vw - w - margin));
+    const arrow = Math.max(12, Math.min(anchor.cx - left, w - 12));
+    setLayout({ left, top: anchor.top - 8, arrow });
+  }, [anchor]);
 
   return (
     <span
       ref={triggerRef}
       tabIndex={0}
-      aria-describedby={coords ? id : undefined}
+      aria-describedby={anchor ? id : undefined}
       onMouseEnter={show}
       onMouseLeave={hide}
       onFocus={show}
@@ -50,16 +77,20 @@ export function RevTooltip({
       className="inline-flex cursor-help outline-none"
     >
       {children}
-      {coords &&
+      {anchor &&
         createPortal(
           <span
+            ref={panelRef}
             id={id}
             role="tooltip"
             style={{
               position: "fixed",
-              top: coords.top - 8,
-              left: coords.left,
-              transform: "translate(-50%, -100%)",
+              // Pre-measure pass renders centered & invisible; the layout effect
+              // then clamps it into the viewport and reveals it.
+              top: layout ? layout.top : anchor.top - 8,
+              left: layout ? layout.left : anchor.cx,
+              transform: layout ? "translateY(-100%)" : "translate(-50%, -100%)",
+              visibility: layout ? "visible" : "hidden",
               zIndex: 80,
               maxWidth: 240,
               width: "max-content",
@@ -82,7 +113,7 @@ export function RevTooltip({
               style={{
                 position: "absolute",
                 top: "100%",
-                left: "50%",
+                left: layout ? layout.arrow : "50%",
                 width: 8,
                 height: 8,
                 transform: "translate(-50%, -50%) rotate(45deg)",
