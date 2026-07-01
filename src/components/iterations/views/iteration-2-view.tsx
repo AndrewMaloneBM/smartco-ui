@@ -467,7 +467,7 @@ export function Iteration2View({ scenario }: { scenario?: string | null } = {}) 
                     </span>
                   </td>
                   <td className={CELL_WRAP} style={{ color: "var(--rev-text-mid)" }}>
-                    {ruleCategories(r).length ? ruleCategories(r).join(", ") : <span className="italic" style={{ color: "var(--rev-text-muted)" }}>All categories</span>}
+                    {ruleCategories(r).length ? ruleCategories(r).join(", ") : "All categories"}
                   </td>
                   <td className={CELL} style={{ color: "var(--rev-text-mid)" }}>
                     {r.product_id ? (
