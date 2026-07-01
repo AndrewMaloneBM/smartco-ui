@@ -1,16 +1,14 @@
 import { isSellerSpecific, type CommissionRule } from "@/lib/types";
 
 /**
- * Step 1 extends Adri's single `category` with an optional `categories` array so a
- * rule can scope to several categories. `categories` (when present) is the source
- * of truth; otherwise we fall back to the single `category`. Adri's type is
- * read-only, so this augments it locally.
+ * A rule scopes to exactly one category (or all, via `category: null`) — never
+ * several. `Step1Rule` aliases Adri's read-only `CommissionRule`; kept as its own
+ * name so call sites don't couple directly to his type.
  */
-export type Step1Rule = CommissionRule & { categories?: string[] };
+export type Step1Rule = CommissionRule;
 
-/** Normalised category scope: `categories` if set, else the single `category`, else [] (all). */
+/** Normalised category scope: the rule's single category, or [] (all). */
 export function ruleCategories(rule: Step1Rule): string[] {
-  if (rule.categories && rule.categories.length) return rule.categories;
   return rule.category ? [rule.category] : [];
 }
 

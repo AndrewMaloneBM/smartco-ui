@@ -131,8 +131,7 @@ function InfoIcon({ content }: { content: string }) {
 
 function sellersLabel(rule: CommissionRule): string {
   if (rule.seller_targeting === "ALL" || rule.seller_ids.length === 0) return "All sellers";
-  if (rule.seller_ids.length === 1) return rule.seller_ids[0];
-  return `${rule.seller_ids.length} sellers`;
+  return rule.seller_ids[0];
 }
 
 const PAGE_SIZE = 25;

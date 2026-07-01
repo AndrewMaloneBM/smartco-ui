@@ -133,11 +133,7 @@ export function scopeLabel(r: Pick<Step1Rule, "market" | "category" | "product_i
   parts.push(r.category ?? "All categories");
   if (r.product_id) parts.push(r.product_id);
   parts.push(
-    r.seller_targeting === "ALL" || r.seller_ids.length === 0
-      ? "All sellers"
-      : r.seller_ids.length === 1
-      ? r.seller_ids[0]
-      : `${r.seller_ids.length} sellers`
+    r.seller_targeting === "ALL" || r.seller_ids.length === 0 ? "All sellers" : r.seller_ids[0]
   );
   return parts.join(" · ");
 }
@@ -201,9 +197,12 @@ export interface CreateInput {
 }
 
 /**
- * Build a CREATE task. Multi-selects fan out: markets × categories × productIds.
- * Empty market = all markets; empty category/product = a single "all" rule for that
- * dimension. Each candidate is classified; strict conflicts are not created.
+ * Build a CREATE task. Multi-selects fan out: markets × categories × productIds ×
+ * sellerIds — a rule scopes to exactly one value per dimension (or all), so picking
+ * several key sellers creates one seller-specific rule per seller, same as picking
+ * several categories creates one rule per category. Empty market = all markets;
+ * empty category/product = a single "all" rule for that dimension. Each candidate
+ * is classified; strict conflicts are not created.
  */
 export function buildCreateTask(
   input: CreateInput,
@@ -213,6 +212,10 @@ export function buildCreateTask(
   const markets = input.markets.length ? input.markets : [...MARKETS];
   const categories = input.categories.length ? input.categories : [null];
   const products = input.productIds.length ? input.productIds : [null];
+  const sellers: { targeting: SellerTargeting; ids: string[] }[] =
+    input.sellerTargeting === "KEY_SELLERS" && input.sellerIds.length
+      ? input.sellerIds.map((id) => ({ targeting: "KEY_SELLERS" as const, ids: [id] }))
+      : [{ targeting: input.sellerTargeting, ids: [] }];
 
   const items: TaskItem[] = [];
   const pendingRules: Step1Rule[] = [];
@@ -224,64 +227,66 @@ export function buildCreateTask(
   for (const market of markets) {
     for (const category of categories) {
       for (const product of products) {
-        const scope = {
-          market,
-          category,
-          product_id: product,
-          seller_targeting: input.sellerTargeting,
-          seller_ids: input.sellerIds,
-        };
-        const { result, relatedRuleId } = classifyScope(scope, working);
-        const label = scopeLabel(scope);
+        for (const seller of sellers) {
+          const scope = {
+            market,
+            category,
+            product_id: product,
+            seller_targeting: seller.targeting,
+            seller_ids: seller.ids,
+          };
+          const { result, relatedRuleId } = classifyScope(scope, working);
+          const label = scopeLabel(scope);
 
-        if (result === "STRICT_CONFLICT") {
+          if (result === "STRICT_CONFLICT") {
+            items.push({
+              ruleId: "—",
+              scope: label,
+              result,
+              message: `Not created — an identical rule already exists (${relatedRuleId}).`,
+              relatedRuleId,
+            });
+            continue;
+          }
+
+          const id = nextRuleId(working, i++);
+          const rule: Step1Rule = {
+            id,
+            name: input.campaignName,
+            market,
+            category,
+            product_id: product,
+            grade: null,
+            battery_type: null,
+            seller_targeting: seller.targeting,
+            seller_ids: [...seller.ids],
+            commission_rate: input.commissionRate,
+            start_date: input.startDate,
+            end_date: input.endDate,
+            state: computeState(
+              { status: "VALIDATED", start_date: input.startDate, end_date: input.endDate },
+              nowIso
+            ),
+            status: "VALIDATED",
+            created_by: input.author,
+            created_at: nowIso,
+            conflicts: relatedRuleId ? [relatedRuleId] : [],
+            orderlines_30d: null,
+            gmv_30d: null,
+          };
+          working.push(rule);
+          pendingRules.push(rule);
           items.push({
-            ruleId: "—",
+            ruleId: id,
             scope: label,
             result,
-            message: `Not created — an identical rule already exists (${relatedRuleId}).`,
+            message:
+              result === "OVERLAP"
+                ? `Created — a broader rule (${relatedRuleId}) already covers this scope and takes priority.`
+                : "Created successfully.",
             relatedRuleId,
           });
-          continue;
         }
-
-        const id = nextRuleId(working, i++);
-        const rule: Step1Rule = {
-          id,
-          name: input.campaignName,
-          market,
-          category,
-          product_id: product,
-          grade: null,
-          battery_type: null,
-          seller_targeting: input.sellerTargeting,
-          seller_ids: [...input.sellerIds],
-          commission_rate: input.commissionRate,
-          start_date: input.startDate,
-          end_date: input.endDate,
-          state: computeState(
-            { status: "VALIDATED", start_date: input.startDate, end_date: input.endDate },
-            nowIso
-          ),
-          status: "VALIDATED",
-          created_by: input.author,
-          created_at: nowIso,
-          conflicts: relatedRuleId ? [relatedRuleId] : [],
-          orderlines_30d: null,
-          gmv_30d: null,
-        };
-        working.push(rule);
-        pendingRules.push(rule);
-        items.push({
-          ruleId: id,
-          scope: label,
-          result,
-          message:
-            result === "OVERLAP"
-              ? `Created — a broader rule (${relatedRuleId}) already covers this scope and takes priority.`
-              : "Created successfully.",
-          relatedRuleId,
-        });
       }
     }
   }

@@ -12,7 +12,6 @@ export function seedRules(): Step1Rule[] {
   return STEP1_RULES.map((r) => ({
     ...r,
     seller_ids: [...r.seller_ids],
-    categories: r.categories ? [...r.categories] : undefined,
     conflicts: [...r.conflicts],
   }));
 }

@@ -112,6 +112,8 @@ const CURATED: Step1Rule[] = [
     status: "VALIDATED",
     created_at: "2026-03-22T08:05:00Z",
   }, // priority 11
+  // A rule scopes to exactly one seller (or all) — a "3-seller bundle" is really
+  // three separate seller-specific rules sharing a campaign name and scope.
   {
     ...BASE,
     id: "RULE-2160",
@@ -122,14 +124,50 @@ const CURATED: Step1Rule[] = [
     grade: null,
     battery_type: null,
     seller_targeting: "KEY_SELLERS",
-    seller_ids: ["TechReborn", "GadgetLoop", "PhoenixPhones"],
+    seller_ids: ["TechReborn"],
     commission_rate: 7.0,
     start_date: "2026-02-10",
     end_date: "2026-09-15",
     state: "ACTIVE",
     status: "VALIDATED",
     created_at: "2026-02-06T13:30:00Z",
-  }, // priority 11 (shows "3 sellers")
+  }, // priority 11
+  {
+    ...BASE,
+    id: "RULE-2161",
+    name: "Key-seller bundle — DE",
+    market: "DE",
+    category: "Smartphones",
+    product_id: null,
+    grade: null,
+    battery_type: null,
+    seller_targeting: "KEY_SELLERS",
+    seller_ids: ["GadgetLoop"],
+    commission_rate: 7.0,
+    start_date: "2026-02-10",
+    end_date: "2026-09-15",
+    state: "ACTIVE",
+    status: "VALIDATED",
+    created_at: "2026-02-06T13:30:00Z",
+  }, // priority 11
+  {
+    ...BASE,
+    id: "RULE-2162",
+    name: "Key-seller bundle — DE",
+    market: "DE",
+    category: "Smartphones",
+    product_id: null,
+    grade: null,
+    battery_type: null,
+    seller_targeting: "KEY_SELLERS",
+    seller_ids: ["PhoenixPhones"],
+    commission_rate: 7.0,
+    start_date: "2026-02-10",
+    end_date: "2026-09-15",
+    state: "ACTIVE",
+    status: "VALIDATED",
+    created_at: "2026-02-06T13:30:00Z",
+  }, // priority 11
   {
     ...BASE,
     id: "RULE-2080",
@@ -244,7 +282,6 @@ const CURATED: Step1Rule[] = [
     name: "Seasonal clearance — PT",
     market: "PT",
     category: "Audio",
-    categories: ["Audio", "Accessories"],
     product_id: null,
     grade: null,
     battery_type: null,
@@ -263,7 +300,6 @@ const CURATED: Step1Rule[] = [
     name: "Overstock clearance — US",
     market: "US",
     category: "Accessories",
-    categories: ["Accessories", "Audio", "Tablets"],
     product_id: null,
     grade: null,
     battery_type: null,
@@ -301,7 +337,6 @@ const CURATED: Step1Rule[] = [
     name: "Winter sale — DE",
     market: "DE",
     category: "Smartphones",
-    categories: ["Smartphones", "Tablets", "Laptops"],
     product_id: null,
     grade: null,
     battery_type: null,
@@ -358,14 +393,15 @@ const CURATED: Step1Rule[] = [
 // (index-based) so the render is stable. Created in 2025 so the curated 2026
 // "hero" rows sort to the top under the default Created-desc order.
 const GEN_MARKETS = ["FR", "DE", "GB", "ES", "IT", "NL", "BE", "US", "PT", "JP"];
-const GEN_CATS: (string[] | null)[] = [
-  ["Smartphones"],
-  ["Laptops"],
-  ["Tablets"],
-  ["Accessories"],
-  ["Audio"],
-  ["Smartphones", "Tablets"],
-  ["Audio", "Accessories"],
+// A rule scopes to exactly one category (or all, via null) — never several.
+const GEN_CATS: (string | null)[] = [
+  "Smartphones",
+  "Laptops",
+  "Tablets",
+  "Accessories",
+  "Audio",
+  "Smartphones",
+  "Audio",
   null, // all categories
 ];
 const GEN_NAMES = [
@@ -392,8 +428,7 @@ const GENERATED: Step1Rule[] = Array.from({ length: 45 }, (_, i) => {
     id: `RULE-4${pad(i)}`,
     name: `${GEN_NAMES[i % GEN_NAMES.length]} — ${market}`,
     market: market as Step1Rule["market"],
-    category: cats?.[0] ?? null,
-    categories: cats && cats.length > 1 ? cats : undefined,
+    category: cats,
     product_id: null,
     grade: null,
     battery_type: null,

@@ -257,7 +257,8 @@ export function CreateRulePanel({
   const fanOut =
     (markets.length || MARKETS.length) *
     (categories.length || 1) *
-    (productIds.length || 1);
+    (productIds.length || 1) *
+    (targeting === "KEY_SELLERS" ? Math.max(sellerIds.length, 1) : 1);
 
   const errors: string[] = [];
   if (!campaignName.trim()) errors.push("Campaign name is required.");
