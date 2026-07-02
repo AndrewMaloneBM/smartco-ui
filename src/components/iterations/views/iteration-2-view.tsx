@@ -57,12 +57,9 @@ function PriorityTag({ rule }: { rule: Step1Rule }) {
   const { bg, fg } = priorityColor(rule.priority);
   return (
     <RevTooltip content="Priority decides which rule applies when several overlap on an orderline. Set by the backend.">
-      <span
-        className="inline-flex items-center px-2 py-0.5 text-xs font-semibold"
-        style={{ borderRadius: REV_RADIUS.xs, background: bg, color: fg }}
-      >
+      <RevTag size="small" style={{ background: bg, color: fg }}>
         {rule.priority}
-      </span>
+      </RevTag>
     </RevTooltip>
   );
 }

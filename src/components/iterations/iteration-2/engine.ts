@@ -217,6 +217,10 @@ export function buildCreateTask(
       ? input.sellerIds.map((id) => ({ targeting: "KEY_SELLERS" as const, ids: [id] }))
       : [{ targeting: input.sellerTargeting, ids: [] }];
 
+  // A blank start date means the rule takes effect immediately — same day as
+  // creation, not an open-ended "All time" start.
+  const startDate = input.startDate ?? nowIso.slice(0, 10);
+
   const items: TaskItem[] = [];
   const pendingRules: Step1Rule[] = [];
   // Classify against the live store plus rules created earlier in this same task,
@@ -261,10 +265,10 @@ export function buildCreateTask(
             seller_targeting: seller.targeting,
             seller_ids: [...seller.ids],
             commission_rate: input.commissionRate,
-            start_date: input.startDate,
+            start_date: startDate,
             end_date: input.endDate,
             state: computeState(
-              { status: "VALIDATED", start_date: input.startDate, end_date: input.endDate },
+              { status: "VALIDATED", start_date: startDate, end_date: input.endDate },
               nowIso
             ),
             status: "VALIDATED",

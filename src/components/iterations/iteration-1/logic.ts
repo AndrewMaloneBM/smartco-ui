@@ -28,13 +28,23 @@ export function priorityColor(score: number): { bg: string; fg: string } {
   return { bg: "hsl(221, 86%, 92%)", fg: "hsl(218, 26%, 55%)" };
 }
 
-/** Arbitrary demo priority (500–1500), derived from the rule id — display filler
+/** Arbitrary demo priority (150–1500), derived from the rule id — display filler
  * only. The real value is computed and returned by the backend; we don't reproduce
  * that logic here, same as we don't reproduce how orderlines_30d/gmv_30d are computed. */
 export function demoPriority(id: string): number {
   let hash = 0;
-  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
-  return 500 + (hash % 1000);
+  for (let i = 0; i < id.length; i++) hash = (Math.imul(hash, 31) + id.charCodeAt(i)) | 0;
+  hash = hash >>> 0;
+  // IDs like RULE-400 vs RULE-401 differ by one trailing digit, so a plain
+  // polynomial hash clusters them together. Bit-mix (Murmur-style finalizer) so
+  // near-identical IDs still spread across the full range and every colour band
+  // in priorityColor shows up somewhere in the demo dataset.
+  hash ^= hash >>> 16;
+  hash = Math.imul(hash, 0x45d9f3b);
+  hash ^= hash >>> 16;
+  hash = Math.imul(hash, 0x45d9f3b);
+  hash ^= hash >>> 16;
+  return 150 + (hash % 1350);
 }
 
 /** State filter replaces the old Active/Inactive tabs (per Roberto's revision). */

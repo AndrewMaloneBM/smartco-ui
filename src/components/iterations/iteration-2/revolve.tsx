@@ -50,11 +50,14 @@ export function RevTag({
   variant = "secondary",
   variation = "filled",
   size = "medium",
+  style: styleOverride,
   children,
 }: {
   variant?: RevTagVariant;
   variation?: "filled" | "outline";
   size?: RevTagSize;
+  /** Overrides the variant's colours (e.g. for a continuous scale a fixed variant can't express). */
+  style?: React.CSSProperties;
   children: ReactNode;
 }) {
   const style: React.CSSProperties =
@@ -68,7 +71,7 @@ export function RevTag({
   return (
     <span
       className={`inline-flex items-center gap-1.5 font-semibold whitespace-nowrap ${TAG_SIZE[size]}`}
-      style={{ borderRadius: REV_RADIUS.sm, ...style }}
+      style={{ borderRadius: REV_RADIUS.sm, ...style, ...styleOverride }}
     >
       {children}
     </span>

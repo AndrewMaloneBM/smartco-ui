@@ -293,7 +293,7 @@ const CURATED: Omit<Step1Rule, "priority">[] = [
     seller_targeting: "ALL",
     seller_ids: [],
     commission_rate: 1.5, // below 2% → soft warning
-    start_date: null, // "All time"
+    start_date: "2026-04-09", // starts immediately on creation — same day as created_at
     end_date: null, // "No expiry"
     state: "ACTIVE",
     status: "VALIDATED",
