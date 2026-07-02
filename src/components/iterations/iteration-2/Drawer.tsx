@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { revolveVars, REV_RADIUS, REV_SHADOW, FONTFACE_CSS, REV_CSS } from "../iteration-1/tokens";
+import { RevDivider, RevIconButton } from "./revolve";
 
 /**
  * Right-side slide-over used by the create / bulk-update panels. Renders inside the
@@ -64,7 +65,7 @@ export function Drawer({
         {/* Header — DS Drawer skeleton: mid-tint header band, low-tint body below. */}
         <div
           className="flex items-start justify-between gap-4 px-6 py-5"
-          style={{ background: "var(--rev-surface-mid)", borderBottom: "1px solid var(--rev-border)" }}
+          style={{ background: "var(--rev-surface-mid)" }}
         >
           <div>
             <h2
@@ -79,32 +80,24 @@ export function Drawer({
               </p>
             )}
           </div>
-          <button
-            type="button"
-            data-rev-btn="ghost"
-            onClick={onClose}
-            aria-label="Close"
-            className="-mr-2 -mt-1 flex h-8 w-8 items-center justify-center"
-            style={{ borderRadius: REV_RADIUS.sm, color: "var(--rev-text-low)" }}
-          >
+          <RevIconButton onClick={onClose} aria-label="Close" className="-mr-2 -mt-1">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M18 6 6 18" />
               <path d="M6 6l12 12" />
             </svg>
-          </button>
+          </RevIconButton>
         </div>
+        <RevDivider />
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
 
         {/* Footer */}
         {footer && (
-          <div
-            className="flex items-center justify-end gap-3 px-6 py-4"
-            style={{ borderTop: "1px solid var(--rev-border)" }}
-          >
-            {footer}
-          </div>
+          <>
+            <RevDivider />
+            <div className="flex items-center justify-end gap-3 px-6 py-4">{footer}</div>
+          </>
         )}
       </aside>
     </div>

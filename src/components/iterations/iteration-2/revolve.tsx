@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { forwardRef, useEffect, useRef, useState, type ReactNode } from "react";
 import { REV_RADIUS } from "../iteration-1/tokens";
 
 /**
@@ -78,6 +78,79 @@ export function RevTag({
 /** A leading status dot for tags (e.g. Active ●). Inherits the tag's text colour. */
 export function RevTagDot() {
   return <span className="h-1.5 w-1.5 rounded-full" style={{ background: "currentColor" }} aria-hidden />;
+}
+
+/**
+ * RevLink — underlined text action (per Storybook `action-link--default`: same
+ * color/weight as surrounding text, not a tinted "link blue"). Renders as a
+ * button since every use here is an in-page action (back, clear), not navigation.
+ */
+export function RevLink({
+  children,
+  ...props
+}: { children: ReactNode } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      type="button"
+      {...props}
+      className={`underline text-sm font-medium transition-opacity hover:opacity-70 disabled:cursor-default disabled:opacity-40 ${props.className ?? ""}`}
+      style={{ color: "var(--rev-text-hi)", ...props.style }}
+    >
+      {children}
+    </button>
+  );
+}
+
+/** RevDivider — a hairline rule between sections (per Storybook `layout-divider--showcase`). */
+export function RevDivider({ className }: { className?: string }) {
+  return (
+    <hr className={className} style={{ border: "none", borderTop: "1px solid var(--rev-border)", margin: 0 }} />
+  );
+}
+
+/**
+ * RevCheckbox — native checkbox tinted to the app's primary action color, sized
+ * to match the row density used across Step 2's tables. No exact Storybook
+ * screenshot was available (Cloudflare rate-limited the fetch) — this is a
+ * best-effort match on color/size, not pixel-verified against Revolve.
+ */
+export const RevCheckbox = forwardRef<
+  HTMLInputElement,
+  { checked: boolean; onChange: () => void } & React.InputHTMLAttributes<HTMLInputElement>
+>(function RevCheckbox({ checked, onChange, ...props }, ref) {
+  return (
+    <input
+      ref={ref}
+      type="checkbox"
+      checked={checked}
+      onChange={onChange}
+      {...props}
+      className={`h-4 w-4 cursor-pointer ${props.className ?? ""}`}
+      style={{ accentColor: "var(--rev-primary)", ...props.style }}
+    />
+  );
+});
+
+/**
+ * RevIconButton — icon-only action (Revolve's "Button Icon"). Ghost/low tone by
+ * default: transparent background, low-contrast icon, fades in on hover.
+ */
+export function RevIconButton({
+  children,
+  "aria-label": ariaLabel,
+  ...props
+}: { children: ReactNode; "aria-label": string } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      type="button"
+      aria-label={ariaLabel}
+      {...props}
+      className={`flex h-8 w-8 items-center justify-center transition-opacity hover:opacity-70 ${props.className ?? ""}`}
+      style={{ borderRadius: REV_RADIUS.sm, color: "var(--rev-text-low)", ...props.style }}
+    >
+      {children}
+    </button>
+  );
 }
 
 /**
@@ -226,7 +299,7 @@ export function RevSelect({
               className="flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm hover:opacity-80"
               style={{ color: "var(--rev-text-hi)" }}
             >
-              <input type="checkbox" checked={selected.includes(opt)} onChange={() => toggle(opt)} className="h-4 w-4" />
+              <RevCheckbox checked={selected.includes(opt)} onChange={() => toggle(opt)} />
               {opt}
             </label>
           ))}

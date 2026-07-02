@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { formatDate } from "@/lib/utils";
 import { REV_RADIUS } from "../iteration-1/tokens";
 import { Drawer } from "./Drawer";
-import { RevTabs, RevTag } from "./revolve";
+import { RevLink, RevTabs, RevTag } from "./revolve";
 import { RESULT_META, type RuleResult, type Task, type TaskItem } from "./engine";
 
 const TONE: Record<"success" | "warning" | "danger", { bg: string; fg: string }> = {
@@ -221,14 +221,9 @@ export function TaskPanel({
       width={520}
     >
       {selected && (
-        <button
-          type="button"
-          onClick={() => setSelectedId(null)}
-          className="mb-4 text-sm font-medium hover:opacity-70"
-          style={{ color: "var(--rev-text-low)" }}
-        >
+        <RevLink onClick={() => setSelectedId(null)} className="mb-4">
           ← All tasks
-        </button>
+        </RevLink>
       )}
 
       {!selected && tasks.length === 0 && (

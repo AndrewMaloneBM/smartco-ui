@@ -38,7 +38,7 @@ import { CreateRulePanel, type CreateSeed } from "../iteration-2/CreateRulePanel
 import { ArchiveConfirm, BulkUpdatePanel } from "../iteration-2/BulkUpdatePanel";
 import { TaskPanel } from "../iteration-2/TaskPanel";
 import { RevButton } from "../iteration-2/Drawer";
-import { RevInput, RevSelect, RevTag, RevTagDot } from "../iteration-2/revolve";
+import { RevCheckbox, RevInput, RevLink, RevSelect, RevTag, RevTagDot } from "../iteration-2/revolve";
 import { makeOverlapTask, makeProcessingTask, makeRejectedTask } from "../iteration-2/scenarios";
 
 const AUTHOR = "demo.user@example.com";
@@ -390,15 +390,9 @@ export function Iteration2View({ scenario }: { scenario?: string | null } = {}) 
             : `${rows.length} rule${rows.length === 1 ? "" : "s"}`}
         </span>
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setSelected(new Set())}
-            disabled={selectedCount === 0}
-            className="px-2 text-sm font-medium transition-opacity hover:opacity-70 disabled:cursor-default disabled:opacity-40"
-            style={{ color: "var(--rev-text-low)" }}
-          >
+          <RevLink onClick={() => setSelected(new Set())} disabled={selectedCount === 0} className="px-2">
             Clear
-          </button>
+          </RevLink>
           <RevButton variant="secondary" onClick={() => setUpdateOpen(true)} disabled={selectedCount === 0}>
             Bulk update
           </RevButton>
@@ -414,7 +408,7 @@ export function Iteration2View({ scenario }: { scenario?: string | null } = {}) 
           <thead>
             <tr style={{ background: "var(--rev-static-mid)", borderBottom: "1px solid var(--rev-border)" }}>
               <th className="px-4 py-3" style={{ width: 44 }}>
-                <input ref={headerRef} type="checkbox" checked={allSelected} onChange={toggleAll} className="h-4 w-4" aria-label="Select all" />
+                <RevCheckbox ref={headerRef} checked={allSelected} onChange={toggleAll} aria-label="Select all" />
               </th>
               <SortHeader
                 label="Priority"
@@ -446,7 +440,7 @@ export function Iteration2View({ scenario }: { scenario?: string | null } = {}) 
               return (
                 <tr key={r.id} data-rev-row className="transition-colors" style={{ borderBottom: "1px solid var(--rev-border)", opacity: archived ? 0.6 : 1 }}>
                   <td className="px-4 py-4 align-top">
-                    <input type="checkbox" checked={checked} onChange={() => toggleOne(r.id)} className="h-4 w-4" aria-label={`Select ${r.id}`} />
+                    <RevCheckbox checked={checked} onChange={() => toggleOne(r.id)} aria-label={`Select ${r.id}`} />
                   </td>
                   <td className={CELL}>
                     <PriorityTag rule={r} />
