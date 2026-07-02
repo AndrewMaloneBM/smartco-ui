@@ -1,15 +1,40 @@
-import { isSellerSpecific, type CommissionRule } from "@/lib/types";
+import type { CommissionRule } from "@/lib/types";
 
 /**
- * A rule scopes to exactly one category (or all, via `category: null`) — never
- * several. `Step1Rule` aliases Adri's read-only `CommissionRule`; kept as its own
- * name so call sites don't couple directly to his type.
+ * `Step1Rule` extends Adri's read-only `CommissionRule` with `priority` — a
+ * number the real backend computes and returns, the same way it already returns
+ * `orderlines_30d` / `gmv_30d`. We never derive it ourselves: the scoring logic
+ * lives in the backend, not here. Values in the mock dataset are plausible demo
+ * numbers only, not a reproduction of the real algorithm.
  */
-export type Step1Rule = CommissionRule;
+export type Step1Rule = CommissionRule & { priority: number };
 
 /** Normalised category scope: the rule's single category, or [] (all). */
 export function ruleCategories(rule: Step1Rule): string[] {
   return rule.category ? [rule.category] : [];
+}
+
+/**
+ * Display colour for a priority number — bucketed into a few bands (not a precise
+ * mapping to specific values, since we don't know or reproduce the backend's real
+ * scoring breakpoints). Purely presentational.
+ */
+export function priorityColor(score: number): { bg: string; fg: string } {
+  if (score >= 1300) return { bg: "hsl(2, 100%, 85%)", fg: "hsl(350, 91%, 29%)" };
+  if (score >= 1100) return { bg: "hsl(3, 100%, 92%)", fg: "hsl(355, 90%, 60%)" };
+  if (score >= 900) return { bg: "hsl(39, 70%, 69%)", fg: "hsl(42, 98%, 19%)" };
+  if (score >= 700) return { bg: "hsl(38, 90%, 84%)", fg: "hsl(39, 48%, 43%)" };
+  if (score >= 500) return { bg: "hsl(219, 65%, 82%)", fg: "hsl(219, 35%, 31%)" };
+  return { bg: "hsl(221, 86%, 92%)", fg: "hsl(218, 26%, 55%)" };
+}
+
+/** Arbitrary demo priority (500–1500), derived from the rule id — display filler
+ * only. The real value is computed and returned by the backend; we don't reproduce
+ * that logic here, same as we don't reproduce how orderlines_30d/gmv_30d are computed. */
+export function demoPriority(id: string): number {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+  return 500 + (hash % 1000);
 }
 
 /** State filter replaces the old Active/Inactive tabs (per Roberto's revision). */
@@ -80,9 +105,8 @@ export function filterRules(
   });
 }
 
-function fieldValue(rule: CommissionRule, field: SortField): number {
-  // Priority (PRD): seller-specific rules always outrank all-sellers rules.
-  if (field === "priority") return isSellerSpecific(rule) ? 1 : 0;
+function fieldValue(rule: Step1Rule, field: SortField): number {
+  if (field === "priority") return rule.priority;
   const iso =
     field === "created_at"
       ? rule.created_at
@@ -93,7 +117,7 @@ function fieldValue(rule: CommissionRule, field: SortField): number {
   return iso ? new Date(iso).getTime() : 0;
 }
 
-export function sortRules<T extends CommissionRule>(
+export function sortRules<T extends Step1Rule>(
   rules: T[],
   field: SortField,
   dir: SortDir

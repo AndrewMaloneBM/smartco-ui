@@ -1,14 +1,19 @@
 import type { CommissionRule } from "@/lib/types";
-import type { Step1Rule } from "./logic";
+import { demoPriority, type Step1Rule } from "./logic";
 
 /**
  * Step 1 demo dataset — lives here (not in Adri's read-only `src/lib/mock-data.ts`).
  *
  * Curated to exercise the read view: a mix of seller-specific (KEY_SELLERS) and
- * all-sellers rules so the Priority column shows both values (seller-specific
- * outranks all sellers), real end dates, readable refurbisher seller names, a few
+ * all-sellers rules, real end dates, readable refurbisher seller names, a few
  * INACTIVE rules, and two out-of-band commission rates to trigger the 2–20% soft
- * warning.
+ * warning. No rule sets both Category and Product — a specific product already
+ * belongs to one category, so requiring both is contradictory.
+ *
+ * `priority` isn't authored per rule below — it's attached at the bottom of this
+ * file (see `demoPriority`) as arbitrary display filler, since the real backend
+ * computes it and we only display what it returns, the same as `orderlines_30d` /
+ * `gmv_30d`.
  *
  * Default filter is State = ACTIVE (per PRD), so the INACTIVE rules appear only
  * when you switch the State filter.
@@ -20,14 +25,14 @@ const BASE = {
   gmv_30d: null,
 } satisfies Partial<CommissionRule>;
 
-const CURATED: Step1Rule[] = [
+const CURATED: Omit<Step1Rule, "priority">[] = [
   // ── Active ───────────────────────────────────────────────────────────────
   {
     ...BASE,
     id: "RULE-2041",
     name: "iPhone 15 Pro — FR launch",
     market: "FR",
-    category: "Smartphones",
+    category: null,
     product_id: "iPhone15Pro-256",
     grade: "GOOD",
     battery_type: null,
@@ -39,13 +44,13 @@ const CURATED: Step1Rule[] = [
     state: "ACTIVE",
     status: "VALIDATED",
     created_at: "2026-01-12T09:24:00Z",
-  }, // priority 16
+  },
   {
     ...BASE,
     id: "RULE-2055",
     name: "Galaxy S24 — DE deal",
     market: "DE",
-    category: "Smartphones",
+    category: null,
     product_id: "GalaxyS24-128",
     grade: null,
     battery_type: null,
@@ -57,7 +62,7 @@ const CURATED: Step1Rule[] = [
     state: "ACTIVE",
     status: "VALIDATED",
     created_at: "2026-01-28T14:02:00Z",
-  }, // priority 15
+  },
   {
     ...BASE,
     id: "RULE-2070",
@@ -75,7 +80,7 @@ const CURATED: Step1Rule[] = [
     state: "ACTIVE",
     status: "VALIDATED",
     created_at: "2026-02-20T11:15:00Z",
-  }, // priority 13
+  },
   {
     ...BASE,
     id: "RULE-2068",
@@ -93,7 +98,7 @@ const CURATED: Step1Rule[] = [
     state: "ACTIVE",
     status: "VALIDATED",
     created_at: "2025-12-18T16:40:00Z",
-  }, // priority 12
+  },
   {
     ...BASE,
     id: "RULE-2072",
@@ -111,7 +116,7 @@ const CURATED: Step1Rule[] = [
     state: "ACTIVE",
     status: "VALIDATED",
     created_at: "2026-03-22T08:05:00Z",
-  }, // priority 11
+  },
   // A rule scopes to exactly one seller (or all) — a "3-seller bundle" is really
   // three separate seller-specific rules sharing a campaign name and scope.
   {
@@ -131,7 +136,7 @@ const CURATED: Step1Rule[] = [
     state: "ACTIVE",
     status: "VALIDATED",
     created_at: "2026-02-06T13:30:00Z",
-  }, // priority 11
+  },
   {
     ...BASE,
     id: "RULE-2161",
@@ -149,7 +154,7 @@ const CURATED: Step1Rule[] = [
     state: "ACTIVE",
     status: "VALIDATED",
     created_at: "2026-02-06T13:30:00Z",
-  }, // priority 11
+  },
   {
     ...BASE,
     id: "RULE-2162",
@@ -167,7 +172,7 @@ const CURATED: Step1Rule[] = [
     state: "ACTIVE",
     status: "VALIDATED",
     created_at: "2026-02-06T13:30:00Z",
-  }, // priority 11
+  },
   {
     ...BASE,
     id: "RULE-2080",
@@ -185,13 +190,13 @@ const CURATED: Step1Rule[] = [
     state: "ACTIVE",
     status: "VALIDATED",
     created_at: "2026-02-11T10:48:00Z",
-  }, // priority 9
+  },
   {
     ...BASE,
     id: "RULE-2090",
     name: "AirPods Pro — DE",
     market: "DE",
-    category: "Audio",
+    category: null,
     product_id: "AirPodsPro2",
     grade: "GOOD",
     battery_type: null,
@@ -203,13 +208,13 @@ const CURATED: Step1Rule[] = [
     state: "ACTIVE",
     status: "VALIDATED",
     created_at: "2026-03-05T09:00:00Z",
-  }, // priority 8
+  },
   {
     ...BASE,
     id: "RULE-2095",
     name: "iPad Air — GB",
     market: "GB",
-    category: "Tablets",
+    category: null,
     product_id: "iPadAir-2025",
     grade: null,
     battery_type: null,
@@ -221,7 +226,7 @@ const CURATED: Step1Rule[] = [
     state: "ACTIVE",
     status: "VALIDATED",
     created_at: "2026-01-16T15:12:00Z",
-  }, // priority 7
+  },
   {
     ...BASE,
     id: "RULE-2101",
@@ -239,7 +244,7 @@ const CURATED: Step1Rule[] = [
     state: "ACTIVE",
     status: "VALIDATED",
     created_at: "2026-01-29T12:20:00Z",
-  }, // priority 5
+  },
   {
     ...BASE,
     id: "RULE-2110",
@@ -257,7 +262,7 @@ const CURATED: Step1Rule[] = [
     state: "ACTIVE",
     status: "VALIDATED",
     created_at: "2026-02-24T17:05:00Z",
-  }, // priority 4
+  },
   {
     ...BASE,
     id: "RULE-2120",
@@ -275,7 +280,7 @@ const CURATED: Step1Rule[] = [
     state: "ACTIVE",
     status: "VALIDATED",
     created_at: "2026-01-02T08:30:00Z",
-  }, // priority 3
+  },
   {
     ...BASE,
     id: "RULE-2122",
@@ -293,7 +298,7 @@ const CURATED: Step1Rule[] = [
     state: "ACTIVE",
     status: "VALIDATED",
     created_at: "2026-04-09T10:10:00Z",
-  }, // priority 3, out-of-range
+  },
   {
     ...BASE,
     id: "RULE-2150",
@@ -311,7 +316,7 @@ const CURATED: Step1Rule[] = [
     state: "ACTIVE",
     status: "VALIDATED",
     created_at: "2026-04-27T14:55:00Z",
-  }, // priority 3, out-of-range
+  },
   {
     ...BASE,
     id: "RULE-2130",
@@ -329,7 +334,7 @@ const CURATED: Step1Rule[] = [
     state: "ACTIVE",
     status: "VALIDATED",
     created_at: "2025-12-15T09:00:00Z",
-  }, // priority 1
+  },
   // ── Inactive (hidden until the State filter is changed) ───────────────────
   {
     ...BASE,
@@ -348,7 +353,7 @@ const CURATED: Step1Rule[] = [
     state: "INACTIVE",
     status: "VALIDATED",
     created_at: "2025-10-22T11:00:00Z",
-  }, // priority 11
+  },
   {
     ...BASE,
     id: "RULE-2142",
@@ -366,7 +371,7 @@ const CURATED: Step1Rule[] = [
     state: "INACTIVE",
     status: "DRAFT",
     created_at: "2026-06-18T16:25:00Z",
-  }, // priority 11
+  },
   {
     ...BASE,
     id: "RULE-2141",
@@ -384,7 +389,7 @@ const CURATED: Step1Rule[] = [
     state: "INACTIVE",
     status: "ARCHIVED",
     created_at: "2026-02-24T10:40:00Z",
-  }, // priority 4
+  },
 ];
 
 // Generated filler so the table exceeds one page (25/page) and pagination is
@@ -416,7 +421,7 @@ const GEN_NAMES = [
 ];
 const pad = (n: number) => String(n).padStart(2, "0");
 
-const GENERATED: Step1Rule[] = Array.from({ length: 45 }, (_, i) => {
+const GENERATED: Omit<Step1Rule, "priority">[] = Array.from({ length: 45 }, (_, i) => {
   const market = GEN_MARKETS[i % GEN_MARKETS.length];
   const cats = GEN_CATS[i % GEN_CATS.length];
   const rate = 4 + (i % 13) + (i % 2) * 0.5; // 4–16.5, inside the 2–20% band
@@ -443,4 +448,7 @@ const GENERATED: Step1Rule[] = Array.from({ length: 45 }, (_, i) => {
   };
 });
 
-export const STEP1_RULES: Step1Rule[] = [...CURATED, ...GENERATED];
+export const STEP1_RULES: Step1Rule[] = [...CURATED, ...GENERATED].map((r) => ({
+  ...r,
+  priority: demoPriority(r.id),
+}));

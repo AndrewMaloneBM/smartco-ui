@@ -1,6 +1,6 @@
 import type { Market, SellerTargeting } from "@/lib/types";
 import { MARKETS } from "@/lib/types";
-import type { Step1Rule } from "../iteration-1/logic";
+import { demoPriority, type Step1Rule } from "../iteration-1/logic";
 
 /**
  * Step 2 write engine — pure functions for conflict detection and the async task
@@ -273,6 +273,9 @@ export function buildCreateTask(
             conflicts: relatedRuleId ? [relatedRuleId] : [],
             orderlines_30d: null,
             gmv_30d: null,
+            // Real backend would compute this on save; we just need placeholder
+            // display data for the demo, not a reproduction of its logic.
+            priority: demoPriority(id),
           };
           working.push(rule);
           pendingRules.push(rule);
