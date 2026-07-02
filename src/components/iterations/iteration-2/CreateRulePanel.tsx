@@ -265,6 +265,10 @@ export function CreateRulePanel({
   if (!rateValid) errors.push("Commission rate must be a number between 0 and 99.99%.");
   if (!datesValid) errors.push("End date must be on or after the start date.");
   if (tooBroad) errors.push("Narrow the scope — specify at least one market, category, product, or seller.");
+  // A specific product already belongs to one category, so requiring both on
+  // the same rule is contradictory.
+  if (categories.length > 0 && productIds.length > 0)
+    errors.push("Category and Product ID can't both be set — a product already belongs to one category.");
   // Unknown product IDs block submission but surface inline (on blur), not in the summary.
   const canSubmit = errors.length === 0 && unknownProducts.length === 0;
 

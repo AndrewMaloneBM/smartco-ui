@@ -7,7 +7,6 @@ import {
   MARKETS,
   MARKET_FLAGS,
   isRateOutOfRange,
-  isSellerSpecific,
   type CommissionRule,
   type RuleState,
 } from "@/lib/types";
@@ -26,10 +25,12 @@ import {
   DEFAULT_FILTERS,
   DEFAULT_SORT,
   filterRules,
+  priorityColor,
   ruleCategories,
   sortRules,
   type IterationFilters,
   type SortField,
+  type Step1Rule,
 } from "../iteration-1/logic";
 
 // PRD scope — "Step #1 - View rules" is read-only: see, filter, sort. Create /
@@ -43,25 +44,20 @@ const CELL = "px-4 py-4 align-top text-sm whitespace-nowrap";
 // width without horizontal scroll — pagination handles row count.
 const CELL_WRAP = "px-4 py-4 align-top text-sm";
 
-// Priority (PRD): a rule is either "Seller-specific" or "All sellers", and
-// seller-specific always takes precedence when rules overlap on an orderline.
-// Rendered as a tag — seller-specific reads stronger (darker chip) so it visibly
-// outranks all-sellers.
-function PriorityTag({ rule }: { rule: CommissionRule }) {
-  const sellerSpecific = isSellerSpecific(rule);
+// Priority is a number the backend computes and returns (like orderlines_30d /
+// gmv_30d) — we display it, we don't derive it. Colour is a rough band, purely
+// presentational, not a precise key to specific values.
+function PriorityTag({ rule }: { rule: Step1Rule }) {
+  const { bg, fg } = priorityColor(rule.priority);
   return (
-    <span
-      className="inline-flex items-center px-2 py-0.5 text-xs font-semibold"
-      style={{
-        borderRadius: REV_RADIUS.xs,
-        background: sellerSpecific
-          ? "var(--rev-static-hi)"
-          : "var(--rev-static-mid)",
-        color: sellerSpecific ? "var(--rev-text-hi)" : "var(--rev-text-low)",
-      }}
-    >
-      {sellerSpecific ? "Seller-specific" : "All sellers"}
-    </span>
+    <RevTooltip content="Priority decides which rule applies when several overlap on an orderline. Set by the backend.">
+      <span
+        className="inline-flex items-center px-2 py-0.5 text-xs font-semibold"
+        style={{ borderRadius: REV_RADIUS.xs, background: bg, color: fg }}
+      >
+        {rule.priority}
+      </span>
+    </RevTooltip>
   );
 }
 
@@ -313,7 +309,7 @@ export function Iteration1View() {
                 active={sort.field === "priority"}
                 dir={sort.dir}
                 onSort={onSort}
-                hint="From the scope of each rule a priority is set. The priority is used to choose what rule will be associated to an orderline. Seller-specific always takes precedence over all sellers."
+                hint="Priority decides which rule applies when several overlap on an orderline. Set by the backend based on the rule's scope."
               />
               <th className={COL_HEAD} style={{ color: "var(--rev-text-hi)" }}>
                 Campaign name
