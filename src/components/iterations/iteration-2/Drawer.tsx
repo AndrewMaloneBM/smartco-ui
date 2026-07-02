@@ -61,10 +61,10 @@ export function Drawer({
           boxShadow: REV_SHADOW.long,
         }}
       >
-        {/* Header */}
+        {/* Header — DS Drawer skeleton: mid-tint header band, low-tint body below. */}
         <div
           className="flex items-start justify-between gap-4 px-6 py-5"
-          style={{ borderBottom: "1px solid var(--rev-border)" }}
+          style={{ background: "var(--rev-surface-mid)", borderBottom: "1px solid var(--rev-border)" }}
         >
           <div>
             <h2
@@ -84,10 +84,13 @@ export function Drawer({
             data-rev-btn="ghost"
             onClick={onClose}
             aria-label="Close"
-            className="-mr-2 -mt-1 flex h-8 w-8 items-center justify-center rounded-lg text-xl leading-none"
+            className="-mr-2 -mt-1 flex h-8 w-8 items-center justify-center"
             style={{ borderRadius: REV_RADIUS.sm, color: "var(--rev-text-low)" }}
           >
-            ×
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M18 6 6 18" />
+              <path d="M6 6l12 12" />
+            </svg>
           </button>
         </div>
 

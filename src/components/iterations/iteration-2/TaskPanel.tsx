@@ -299,16 +299,20 @@ export function TaskPanel({
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs" style={{ color: "var(--rev-text-low)" }}>
             <span>
-              Status <StatusPill status={selected.status} />
+              <strong className="font-semibold">Status</strong>{" "}
+              <span style={{ color: "var(--rev-text-hi)" }}>
+                {selected.status === "ONGOING" ? "Ongoing" : "Done"}
+              </span>
             </span>
             <span>
-              Duration{" "}
-              <strong style={{ color: "var(--rev-text-hi)" }}>
-                {selected.status === "DONE" ? fmtDuration(selected.durationMs) : "in progress"}
-              </strong>
+              <strong className="font-semibold">Duration</strong>{" "}
+              <span style={{ color: "var(--rev-text-hi)" }}>
+                {selected.status === "DONE" ? fmtDuration(selected.durationMs) : "—"}
+              </span>
             </span>
             <span>
-              Rules <strong style={{ color: "var(--rev-text-hi)" }}>{selected.items.length}</strong>
+              <strong className="font-semibold">Rules</strong>{" "}
+              <span style={{ color: "var(--rev-text-hi)" }}>{selected.items.length}</span>
             </span>
           </div>
           <TaskDetail task={selected} />
