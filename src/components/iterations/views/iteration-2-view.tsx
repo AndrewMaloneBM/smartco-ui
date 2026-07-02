@@ -419,6 +419,14 @@ export function Iteration2View({ scenario }: { scenario?: string | null } = {}) 
                 info="Priority is derived from each rule's scope and decides which rule applies to an orderline when several overlap. Seller-specific rules always take precedence over all-sellers rules."
               />
               <th className={COL_HEAD} style={{ color: "var(--rev-text-hi)" }}>Campaign name</th>
+              <SortHeader
+                label="Created"
+                field="created_at"
+                active={sort.field === "created_at"}
+                dir={sort.dir}
+                onSort={onSort}
+                info="When the rule was created. Independent of Start date — a rule with no Start date activates immediately on creation rather than on a future scheduled date."
+              />
               <SortHeader label="Start date" field="start_date" active={sort.field === "start_date"} dir={sort.dir} onSort={onSort} />
               <SortHeader label="End date" field="end_date" active={sort.field === "end_date"} dir={sort.dir} onSort={onSort} />
               {["Market", "Category", "Product ID", "Sellers", "Commission", "State"].map((h) => (
@@ -449,6 +457,7 @@ export function Iteration2View({ scenario }: { scenario?: string | null } = {}) 
                     <div className="font-medium">{r.name}</div>
                     <div className="text-xs" style={{ color: "var(--rev-text-muted)" }}>{r.id}</div>
                   </td>
+                  <td className={CELL} style={{ color: "var(--rev-text-mid)" }}>{formatDate(r.created_at)}</td>
                   <td className={CELL} style={{ color: "var(--rev-text-mid)" }}>
                     {r.start_date ? formatDate(r.start_date) : <span className="italic" style={{ color: "var(--rev-text-muted)" }}>All time</span>}
                   </td>
@@ -492,7 +501,7 @@ export function Iteration2View({ scenario }: { scenario?: string | null } = {}) 
             })}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={12} className="px-3 py-10 text-center text-sm" style={{ color: "var(--rev-text-muted)" }}>
+                <td colSpan={13} className="px-3 py-10 text-center text-sm" style={{ color: "var(--rev-text-muted)" }}>
                   No rules match these filters.
                 </td>
               </tr>
