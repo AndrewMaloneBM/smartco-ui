@@ -2,6 +2,8 @@
 
 import { forwardRef, useEffect, useRef, useState, type ReactNode } from "react";
 import { REV_RADIUS } from "../iteration-1/tokens";
+import type { Market } from "@/lib/types";
+import { MarketFlag } from "./flags";
 
 /**
  * Small React kit faithful to Revolve's `Rev*` specs (Revolve itself is Vue-only,
@@ -81,6 +83,22 @@ export function RevTag({
 /** A leading status dot for tags (e.g. Active ●). Inherits the tag's text colour. */
 export function RevTagDot() {
   return <span className="h-1.5 w-1.5 rounded-full" style={{ background: "currentColor" }} aria-hidden />;
+}
+
+/**
+ * 🚀 Components "Pill" (size=small, prefix=flag, tone=default) — the chevron
+ * end-icon in that spec is omitted per request; this is flag + label only.
+ */
+export function RevPill({ flag, children }: { flag: Market; children: ReactNode }) {
+  return (
+    <span
+      className="inline-flex items-center h-7 whitespace-nowrap"
+      style={{ borderRadius: REV_RADIUS.round, background: "var(--rev-static-mid)", paddingLeft: 10, paddingRight: 8, gap: 6 }}
+    >
+      <MarketFlag market={flag} />
+      <span className="text-xs" style={{ color: "var(--rev-text-mid)" }}>{children}</span>
+    </span>
+  );
 }
 
 /**
