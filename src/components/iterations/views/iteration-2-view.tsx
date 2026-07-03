@@ -43,6 +43,7 @@ import { TaskPanel } from "../iteration-2/TaskPanel";
 import { RevButton } from "../iteration-2/Drawer";
 import { RevCheckbox, RevInput, RevLink, RevSelect, RevTag, RevTagDot } from "../iteration-2/revolve";
 import { makeOverlapTask, makeProcessingTask, makeRejectedTask } from "../iteration-2/scenarios";
+import { PriorityColourReference } from "../iteration-2/PriorityColourReference";
 
 const AUTHOR = "demo.user@example.com";
 
@@ -333,6 +334,10 @@ export function Iteration2View({ scenario }: { scenario?: string | null } = {}) 
   };
 
   const ongoingCount = tasks.filter((t) => t.status === "ONGOING").length;
+
+  // "Priority colour reference" is a static dev-handoff doc, not a table state —
+  // it replaces the whole body instead of seeding rules/tasks like the other scenarios.
+  if (scenario === "priority-colours") return <PriorityColourReference />;
 
   return (
     <div
