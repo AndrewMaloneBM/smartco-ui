@@ -44,7 +44,9 @@ export function demoPriority(id: string): number {
   hash ^= hash >>> 16;
   hash = Math.imul(hash, 0x45d9f3b);
   hash ^= hash >>> 16;
-  return 150 + (hash % 1350);
+  // Math.imul returns a signed 32-bit int, so hash can be negative here — force
+  // unsigned before the modulo or the result (and the displayed priority) goes negative.
+  return 150 + ((hash >>> 0) % 1350);
 }
 
 /** State filter replaces the old Active/Inactive tabs (per Roberto's revision). */
