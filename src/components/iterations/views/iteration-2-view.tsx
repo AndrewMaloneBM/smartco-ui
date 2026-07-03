@@ -480,7 +480,7 @@ export function Iteration2View({ scenario }: { scenario?: string | null } = {}) 
                   </td>
                   <td className={CELL} style={{ color: "var(--rev-text-mid)" }}>
                     {r.product_id ? (
-                      <span className="font-mono text-xs">{r.product_id}</span>
+                      r.product_id
                     ) : (
                       <span className="italic" style={{ color: "var(--rev-text-muted)" }}>All products</span>
                     )}
