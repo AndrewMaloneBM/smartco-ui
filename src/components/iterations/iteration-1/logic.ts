@@ -17,15 +17,17 @@ export function ruleCategories(rule: Step1Rule): string[] {
 /**
  * Display colour for a priority number — bucketed into a few bands (not a precise
  * mapping to specific values, since we don't know or reproduce the backend's real
- * scoring breakpoints). Purely presentational.
+ * scoring breakpoints). Purely presentational. Colours are Revolve functional
+ * tokens (danger/warning/info scales, defined in tokens.ts's revolveVars) —
+ * requires `revolveVars` applied on an ancestor (both iteration views do this).
  */
 export function priorityColor(score: number): { bg: string; fg: string } {
-  if (score >= 1250) return { bg: "hsl(2, 100%, 85%)", fg: "hsl(350, 91%, 29%)" };
-  if (score >= 1000) return { bg: "hsl(3, 100%, 92%)", fg: "hsl(355, 90%, 60%)" };
-  if (score >= 750) return { bg: "hsl(39, 70%, 69%)", fg: "hsl(42, 98%, 19%)" };
-  if (score >= 500) return { bg: "hsl(38, 90%, 84%)", fg: "hsl(39, 48%, 43%)" };
-  if (score >= 250) return { bg: "hsl(219, 65%, 82%)", fg: "hsl(219, 35%, 31%)" };
-  return { bg: "hsl(221, 86%, 92%)", fg: "hsl(218, 26%, 55%)" };
+  if (score >= 1250) return { bg: "var(--rev-danger-80)", fg: "var(--rev-danger-30)" };
+  if (score >= 1000) return { bg: "var(--rev-danger-bg)", fg: "var(--rev-danger-55)" };
+  if (score >= 750) return { bg: "var(--rev-warning-80)", fg: "var(--rev-warning-30)" };
+  if (score >= 500) return { bg: "var(--rev-warning-bg)", fg: "var(--rev-warning-55)" };
+  if (score >= 250) return { bg: "var(--rev-info-80)", fg: "var(--rev-info-30)" };
+  return { bg: "var(--rev-info-90)", fg: "var(--rev-info-55)" };
 }
 
 /** Arbitrary demo priority (0–1400), derived from the rule id — display filler
