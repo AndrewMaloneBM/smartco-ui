@@ -335,7 +335,7 @@ const CURATED: Omit<Step1Rule, "priority">[] = [
     status: "VALIDATED",
     created_at: "2025-12-15T09:00:00Z",
   },
-  // ── Inactive (hidden until the State filter is changed) ───────────────────
+  // ── Inactive (shown by default so the State tag's off-styling is visible) ──
   {
     ...BASE,
     id: "RULE-2140",
@@ -348,11 +348,11 @@ const CURATED: Omit<Step1Rule, "priority">[] = [
     seller_targeting: "ALL",
     seller_ids: [],
     commission_rate: 7.5,
-    start_date: "2025-11-01",
+    start_date: "2025-12-20",
     end_date: "2026-02-28", // expired → inactive
     state: "INACTIVE",
     status: "VALIDATED",
-    created_at: "2025-10-22T11:00:00Z",
+    created_at: "2025-12-18T11:00:00Z",
   },
   {
     ...BASE,

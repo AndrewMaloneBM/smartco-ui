@@ -41,7 +41,7 @@ import { CreateRulePanel, type CreateSeed } from "../iteration-2/CreateRulePanel
 import { ArchiveConfirm, BulkUpdatePanel } from "../iteration-2/BulkUpdatePanel";
 import { TaskPanel } from "../iteration-2/TaskPanel";
 import { RevButton } from "../iteration-2/Drawer";
-import { RevCheckbox, RevInput, RevLink, RevSelect, RevTag, RevTagDot } from "../iteration-2/revolve";
+import { RevCheckbox, RevInput, RevLink, RevSelect, RevTag } from "../iteration-2/revolve";
 import { makeOverlapTask, makeProcessingTask, makeRejectedTask } from "../iteration-2/scenarios";
 import { PriorityColourReference } from "../iteration-2/PriorityColourReference";
 
@@ -65,11 +65,14 @@ function PriorityTag({ rule }: { rule: Step1Rule }) {
   );
 }
 
+// Exact spec match to 🚀 Components "Tag" (tone=success/neutral, level=hi
+// filled, size=small): 2px corner radius, 2px horizontal padding, 0 vertical.
+const STATE_TAG_STYLE = { borderRadius: REV_RADIUS.xs, paddingLeft: 2, paddingRight: 2, paddingTop: 0, paddingBottom: 0 };
+
 function StateBadge({ state }: { state: RuleState }) {
   const active = state === "ACTIVE";
   return (
-    <RevTag variant={active ? "success" : "secondary"} size="small">
-      <RevTagDot />
+    <RevTag variant={active ? "success" : "secondary"} size="small" style={STATE_TAG_STYLE}>
       {active ? "Active" : "Inactive"}
     </RevTag>
   );

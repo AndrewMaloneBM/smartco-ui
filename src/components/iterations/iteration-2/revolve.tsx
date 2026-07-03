@@ -22,7 +22,7 @@ type RevTagSize = "small" | "medium" | "large";
 // filled: { background, text } — values per RevTag.md "Color — filled variation".
 const TAG_FILLED: Record<RevTagVariant, { bg: string; fg: string }> = {
   primary: { bg: "hsl(70, 88%, 73%)", fg: "var(--rev-text-hi)" },
-  secondary: { bg: "var(--rev-static-mid)", fg: "var(--rev-text-hi)" },
+  secondary: { bg: "var(--rev-static-mid)", fg: "var(--rev-tag-neutral-text)" },
   info: { bg: "var(--rev-info-bg)", fg: "var(--rev-info)" },
   success: { bg: "var(--rev-success-bg)", fg: "var(--rev-success)" },
   warning: { bg: "var(--rev-warning-bg)", fg: "var(--rev-warning)" },
