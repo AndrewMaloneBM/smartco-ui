@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CATEGORIES,
   MARKETS,
-  MARKET_FLAGS,
   isRateOutOfRange,
   type CommissionRule,
   type RuleState,
@@ -42,15 +41,15 @@ import { CreateRulePanel, type CreateSeed } from "../iteration-2/CreateRulePanel
 import { ArchiveConfirm, BulkUpdatePanel } from "../iteration-2/BulkUpdatePanel";
 import { TaskPanel } from "../iteration-2/TaskPanel";
 import { RevButton } from "../iteration-2/Drawer";
-import { RevCheckbox, RevInput, RevLink, RevSelect, RevTag, type RevTagVariant } from "../iteration-2/revolve";
+import { RevCheckbox, RevInput, RevLink, RevPill, RevSelect, RevTag, type RevTagVariant } from "../iteration-2/revolve";
 import { makeOverlapTask, makeProcessingTask, makeRejectedTask } from "../iteration-2/scenarios";
 import { PriorityColourReference } from "../iteration-2/PriorityColourReference";
 
 const AUTHOR = "demo.user@example.com";
 
 const COL_HEAD = "px-4 py-3 text-left text-sm font-semibold whitespace-nowrap";
-const CELL = "px-4 py-4 align-top text-sm whitespace-nowrap";
-const CELL_WRAP = "px-4 py-4 align-top text-sm";
+const CELL = "px-4 py-4 align-middle text-sm whitespace-nowrap";
+const CELL_WRAP = "px-4 py-4 align-middle text-sm";
 
 // Priority is a number the backend computes and returns (like orderlines_30d /
 // gmv_30d) — we display it, we don't derive it. Colour is a rough band, purely
@@ -462,7 +461,7 @@ export function Iteration2View({ scenario }: { scenario?: string | null } = {}) 
               const archived = r.status === "ARCHIVED";
               return (
                 <tr key={r.id} data-rev-row className="transition-colors" style={{ borderBottom: "1px solid var(--rev-border)", opacity: archived ? 0.6 : 1 }}>
-                  <td className="px-4 py-4 align-top">
+                  <td className="px-4 py-4 align-middle">
                     <RevCheckbox checked={checked} onChange={() => toggleOne(r.id)} aria-label={`Select ${r.id}`} />
                   </td>
                   <td className={CELL}>
@@ -480,9 +479,7 @@ export function Iteration2View({ scenario }: { scenario?: string | null } = {}) 
                     {r.end_date ? formatDate(r.end_date) : <span className="italic" style={{ color: "var(--rev-text-muted)" }}>No expiry</span>}
                   </td>
                   <td className={CELL}>
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-semibold" style={{ background: "var(--rev-static-mid)", borderRadius: REV_RADIUS.xs }}>
-                      {MARKET_FLAGS[r.market]} {r.market}
-                    </span>
+                    <RevPill flag={r.market}>{r.market}</RevPill>
                   </td>
                   <td className={CELL_WRAP} style={{ color: "var(--rev-text-mid)" }}>
                     {ruleCategories(r).length ? ruleCategories(r).join(", ") : "All categories"}
