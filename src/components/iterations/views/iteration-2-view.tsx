@@ -8,6 +8,7 @@ import {
   isRateOutOfRange,
   type CommissionRule,
   type RuleState,
+  type RuleStatus,
 } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 import { RevTooltip } from "../iteration-1/RevTooltip";
@@ -41,7 +42,7 @@ import { CreateRulePanel, type CreateSeed } from "../iteration-2/CreateRulePanel
 import { ArchiveConfirm, BulkUpdatePanel } from "../iteration-2/BulkUpdatePanel";
 import { TaskPanel } from "../iteration-2/TaskPanel";
 import { RevButton } from "../iteration-2/Drawer";
-import { RevCheckbox, RevInput, RevLink, RevSelect, RevTag } from "../iteration-2/revolve";
+import { RevCheckbox, RevInput, RevLink, RevSelect, RevTag, type RevTagVariant } from "../iteration-2/revolve";
 import { makeOverlapTask, makeProcessingTask, makeRejectedTask } from "../iteration-2/scenarios";
 import { PriorityColourReference } from "../iteration-2/PriorityColourReference";
 
@@ -65,28 +66,33 @@ function PriorityTag({ rule }: { rule: Step1Rule }) {
   );
 }
 
-// Exact spec match to 🚀 Components "Tag" (tone=success/neutral, level=hi
-// filled, size=small): 2px corner radius, 2px horizontal padding, 0 vertical.
-const STATE_TAG_STYLE = { borderRadius: REV_RADIUS.xs, paddingLeft: 2, paddingRight: 2, paddingTop: 0, paddingBottom: 0 };
+// Exact spec match to 🚀 Components "Tag" (size=small, both filled and outline
+// levels): 2px corner radius, 2px horizontal padding, 0 vertical.
+const SMALL_TAG_STYLE = { borderRadius: REV_RADIUS.xs, paddingLeft: 2, paddingRight: 2, paddingTop: 0, paddingBottom: 0 };
 
 function StateBadge({ state }: { state: RuleState }) {
   const active = state === "ACTIVE";
   return (
-    <RevTag variant={active ? "success" : "secondary"} size="small" style={STATE_TAG_STYLE}>
+    <RevTag variant={active ? "success" : "secondary"} size="small" style={SMALL_TAG_STYLE}>
       {active ? "Active" : "Inactive"}
     </RevTag>
   );
 }
 
+// Status uses the outline ("low") tag level, one tone per lifecycle stage:
+// Validated=success, Archived=neutral, Draft=info, Paused=warning.
+const STATUS_TAG: Record<RuleStatus, { variant: RevTagVariant; label: string }> = {
+  VALIDATED: { variant: "success", label: "Validated" },
+  ARCHIVED: { variant: "secondary", label: "Archived" },
+  DRAFT: { variant: "info", label: "Draft" },
+  PAUSED: { variant: "warning", label: "Paused" },
+};
+
 function StatusBadge({ status }: { status: CommissionRule["status"] }) {
-  const archived = status === "ARCHIVED";
-  return archived ? (
-    <RevTag variant="secondary" size="small">
-      Archived
-    </RevTag>
-  ) : (
-    <RevTag variant="secondary" variation="outline" size="small">
-      Validated
+  const { variant, label } = STATUS_TAG[status];
+  return (
+    <RevTag variant={variant} variation="outline" size="small" style={SMALL_TAG_STYLE}>
+      {label}
     </RevTag>
   );
 }

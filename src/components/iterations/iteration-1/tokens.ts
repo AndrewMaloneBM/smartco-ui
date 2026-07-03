@@ -43,6 +43,11 @@ export const revolveVars = {
   // Exact text colour from the 🚀 Components "Tag" spec (tone=neutral) — a hair
   // darker than --rev-text-hi; kept separate so we don't touch that broader token.
   "--rev-tag-neutral-text": "hsl(260, 16%, 7%)",
+  // Outline-tag border colours (🚀 Components "Tag", level=low). Lighter tint of
+  // each mood than the solid text colour, used only for the outline border.
+  "--rev-success-border": "hsl(151, 56%, 49%)",
+  "--rev-info-border": "hsl(219, 43%, 72%)",
+  "--rev-warning-border": "hsl(39, 51%, 58%)",
   // focus (functional.focus.50) — used for focus-visible rings
   "--rev-focus": "hsl(225, 100%, 60%)",
   "--rev-focus-low": "hsl(225, 7%, 78%)",

@@ -32,10 +32,10 @@ const TAG_FILLED: Record<RevTagVariant, { bg: string; fg: string }> = {
 // outline: { border, text }.
 const TAG_OUTLINE: Record<RevTagVariant, { border: string; fg: string }> = {
   primary: { border: "hsl(70, 45%, 49%)", fg: "var(--rev-text-hi)" },
-  secondary: { border: "var(--rev-border-strong)", fg: "var(--rev-text-hi)" },
-  info: { border: "hsl(221, 60%, 75%)", fg: "var(--rev-info)" },
-  success: { border: "var(--rev-success)", fg: "var(--rev-success)" },
-  warning: { border: "var(--rev-warning)", fg: "var(--rev-warning)" },
+  secondary: { border: "var(--rev-border-strong)", fg: "var(--rev-tag-neutral-text)" },
+  info: { border: "var(--rev-info-border)", fg: "var(--rev-info)" },
+  success: { border: "var(--rev-success-border)", fg: "var(--rev-success)" },
+  warning: { border: "var(--rev-warning-border)", fg: "var(--rev-warning)" },
   danger: { border: "var(--rev-danger)", fg: "var(--rev-danger)" },
   alternate: { border: "var(--rev-border-strong)", fg: "var(--rev-text-hi)" },
 };
