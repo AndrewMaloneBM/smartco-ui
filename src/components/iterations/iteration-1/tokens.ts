@@ -23,26 +23,23 @@ export const revolveVars = {
   "--rev-border": "hsl(225, 15%, 89%)",
   "--rev-border-strong": "hsl(223, 4%, 68%)",
   "--rev-input-border": "hsl(223, 3%, 52%)",
-  // functional — backgrounds align to the real RevTag/RevBanner static.*.mid tokens
+  // functional — text/bg pairs match the real Revolve "Colors · Semantic" (Moods)
+  // library: text/static-{mood}-hi + bg/static-{mood}-mid, one pair per mood.
   "--rev-success": "hsl(156, 100%, 21%)",
   "--rev-success-bg": "hsl(145, 83%, 77%)",
   "--rev-warning": "hsl(42, 75%, 27%)",
   "--rev-warning-bg": "hsl(38, 90%, 84%)",
+  // bg/static-warning-low — lighter tier of the same mood, for scales needing
+  // two steps of a hue (e.g. the Priority column's low/high bands).
+  "--rev-warning-bg-low": "hsl(36, 95%, 92%)",
   "--rev-danger": "hsl(351, 84%, 39%)",
-  // functional.danger.90 — soft red tint for danger tags/sections
   "--rev-danger-bg": "hsl(3, 100%, 92%)",
-  // Additional functional shades for scales that need more than one step of a
-  // hue (e.g. the Priority column's low→high bands).
-  "--rev-danger-30": "hsl(350, 91%, 29%)",
-  "--rev-danger-55": "hsl(355, 90%, 60%)",
-  "--rev-danger-80": "hsl(2, 100%, 85%)",
-  "--rev-warning-30": "hsl(42, 98%, 19%)",
-  "--rev-warning-55": "hsl(39, 48%, 43%)",
-  "--rev-warning-80": "hsl(39, 70%, 69%)",
-  "--rev-info-30": "hsl(219, 35%, 31%)",
-  "--rev-info-55": "hsl(218, 26%, 55%)",
-  "--rev-info-80": "hsl(219, 65%, 82%)",
-  "--rev-info-90": "hsl(221, 86%, 92%)",
+  // bg/static-danger-low
+  "--rev-danger-bg-low": "hsl(6, 100%, 96%)",
+  "--rev-info": "hsl(219, 27%, 40%)",
+  "--rev-info-bg": "hsl(221, 86%, 92%)",
+  // bg/static-info-low
+  "--rev-info-bg-low": "hsl(227, 90%, 96%)",
   // focus (functional.focus.50) — used for focus-visible rings
   "--rev-focus": "hsl(225, 100%, 60%)",
   "--rev-focus-low": "hsl(225, 7%, 78%)",

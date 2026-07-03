@@ -21,6 +21,7 @@ export const STEP2_SCENARIOS: { id: string; label: string; group: string }[] = [
   { id: "archive-confirm", label: "Archive confirm", group: "Table & bulk" },
   { id: "archived-row", label: "Archived rule", group: "Table & bulk" },
   { id: "empty-result", label: "Empty result", group: "Table & bulk" },
+  { id: "priority-colours", label: "Priority colour reference", group: "Reference" },
 ];
 
 /** A finished CREATE task that mixes a clean create with an overlap (lower priority). */

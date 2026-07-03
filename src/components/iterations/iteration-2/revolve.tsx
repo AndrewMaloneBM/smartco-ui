@@ -23,7 +23,7 @@ type RevTagSize = "small" | "medium" | "large";
 const TAG_FILLED: Record<RevTagVariant, { bg: string; fg: string }> = {
   primary: { bg: "hsl(70, 88%, 73%)", fg: "var(--rev-text-hi)" },
   secondary: { bg: "var(--rev-static-mid)", fg: "var(--rev-text-hi)" },
-  info: { bg: "hsl(221, 86%, 92%)", fg: "hsl(219, 27%, 40%)" },
+  info: { bg: "var(--rev-info-bg)", fg: "var(--rev-info)" },
   success: { bg: "var(--rev-success-bg)", fg: "var(--rev-success)" },
   warning: { bg: "var(--rev-warning-bg)", fg: "var(--rev-warning)" },
   danger: { bg: "var(--rev-danger-bg)", fg: "var(--rev-danger)" },
@@ -33,7 +33,7 @@ const TAG_FILLED: Record<RevTagVariant, { bg: string; fg: string }> = {
 const TAG_OUTLINE: Record<RevTagVariant, { border: string; fg: string }> = {
   primary: { border: "hsl(70, 45%, 49%)", fg: "var(--rev-text-hi)" },
   secondary: { border: "var(--rev-border-strong)", fg: "var(--rev-text-hi)" },
-  info: { border: "hsl(221, 60%, 75%)", fg: "hsl(219, 27%, 40%)" },
+  info: { border: "hsl(221, 60%, 75%)", fg: "var(--rev-info)" },
   success: { border: "var(--rev-success)", fg: "var(--rev-success)" },
   warning: { border: "var(--rev-warning)", fg: "var(--rev-warning)" },
   danger: { border: "var(--rev-danger)", fg: "var(--rev-danger)" },
