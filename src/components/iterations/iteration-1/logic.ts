@@ -20,15 +20,15 @@ export function ruleCategories(rule: Step1Rule): string[] {
  * scoring breakpoints). Purely presentational.
  */
 export function priorityColor(score: number): { bg: string; fg: string } {
-  if (score >= 1300) return { bg: "hsl(2, 100%, 85%)", fg: "hsl(350, 91%, 29%)" };
-  if (score >= 1100) return { bg: "hsl(3, 100%, 92%)", fg: "hsl(355, 90%, 60%)" };
-  if (score >= 900) return { bg: "hsl(39, 70%, 69%)", fg: "hsl(42, 98%, 19%)" };
-  if (score >= 700) return { bg: "hsl(38, 90%, 84%)", fg: "hsl(39, 48%, 43%)" };
-  if (score >= 500) return { bg: "hsl(219, 65%, 82%)", fg: "hsl(219, 35%, 31%)" };
+  if (score >= 1250) return { bg: "hsl(2, 100%, 85%)", fg: "hsl(350, 91%, 29%)" };
+  if (score >= 1000) return { bg: "hsl(3, 100%, 92%)", fg: "hsl(355, 90%, 60%)" };
+  if (score >= 750) return { bg: "hsl(39, 70%, 69%)", fg: "hsl(42, 98%, 19%)" };
+  if (score >= 500) return { bg: "hsl(38, 90%, 84%)", fg: "hsl(39, 48%, 43%)" };
+  if (score >= 250) return { bg: "hsl(219, 65%, 82%)", fg: "hsl(219, 35%, 31%)" };
   return { bg: "hsl(221, 86%, 92%)", fg: "hsl(218, 26%, 55%)" };
 }
 
-/** Arbitrary demo priority (150–1500), derived from the rule id — display filler
+/** Arbitrary demo priority (0–1400), derived from the rule id — display filler
  * only. The real value is computed and returned by the backend; we don't reproduce
  * that logic here, same as we don't reproduce how orderlines_30d/gmv_30d are computed. */
 export function demoPriority(id: string): number {
@@ -46,7 +46,7 @@ export function demoPriority(id: string): number {
   hash ^= hash >>> 16;
   // Math.imul returns a signed 32-bit int, so hash can be negative here — force
   // unsigned before the modulo or the result (and the displayed priority) goes negative.
-  return 150 + ((hash >>> 0) % 1350);
+  return (hash >>> 0) % 1400;
 }
 
 /** State filter replaces the old Active/Inactive tabs (per Roberto's revision). */
