@@ -40,6 +40,9 @@ export const revolveVars = {
   "--rev-info-bg": "hsl(221, 86%, 92%)",
   // bg/static-info-low
   "--rev-info-bg-low": "hsl(227, 90%, 96%)",
+  // Exact text colour from the 🚀 Components "Tag" spec (tone=neutral) — a hair
+  // darker than --rev-text-hi; kept separate so we don't touch that broader token.
+  "--rev-tag-neutral-text": "hsl(260, 16%, 7%)",
   // focus (functional.focus.50) — used for focus-visible rings
   "--rev-focus": "hsl(225, 100%, 60%)",
   "--rev-focus-low": "hsl(225, 7%, 78%)",
