@@ -20,7 +20,25 @@ const FLAG_SVG: Record<Market, string> = {
   JP: `<svg viewBox="0 0 40 27" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="27" fill="#F5F5F5"/><g clip-path="url(#c)"><path fill-rule="evenodd" clip-rule="evenodd" d="M0 0.860321H40V27.5303H0V0.860321Z" fill="#F0F0F0"/><path d="M20 21.835C24.6944 21.835 28.5 18.0294 28.5 13.335C28.5 8.64058 24.6944 4.835 20 4.835C15.3056 4.835 11.5 8.64058 11.5 13.335C11.5 18.0294 15.3056 21.835 20 21.835Z" fill="#D80027"/></g><defs><clipPath id="c"><rect width="40" height="26.67" fill="white"/></clipPath></defs></svg>`,
 };
 
-/** Small rounded flag chip (🚀 Components "Pill", flag prefix — 12×8, no border). */
+/**
+ * Flags with a significant white/grey area need a hairline border so that area
+ * doesn't blend into the pill's own light grey background. Flags that are fully
+ * saturated colour throughout (DE, ES, BE, PT) don't need it.
+ */
+const FLAG_NEEDS_BORDER: Record<Market, boolean> = {
+  FR: true,
+  DE: false,
+  GB: true,
+  US: true,
+  ES: false,
+  IT: true,
+  NL: true,
+  BE: false,
+  PT: false,
+  JP: true,
+};
+
+/** Small rounded flag chip (🚀 Components "Pill", flag prefix — 12×8). */
 export function MarketFlag({ market }: { market: Market }) {
   return (
     <span
@@ -31,6 +49,7 @@ export function MarketFlag({ market }: { market: Market }) {
         height: 8,
         borderRadius: 0.67,
         overflow: "hidden",
+        border: FLAG_NEEDS_BORDER[market] ? "1px solid var(--rev-flag-border)" : undefined,
         flexShrink: 0,
       }}
     >
