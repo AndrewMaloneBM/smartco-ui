@@ -20,11 +20,10 @@ export type Step2Filters = {
 };
 
 /**
- * Default view hides archived rules (status filter = not-archived). Unlike Step 1,
- * both states show by default — the seed data's Inactive rows (expired / not yet
- * started) are a dev/reviewer reference for how the State tag looks when off, so
- * they shouldn't require changing a filter to find. Archived rules still only
- * surface when the user explicitly adds Archived to the Status filter.
+ * Both State values and both Status filter buckets show by default — the seed
+ * data's Inactive rows and its one example of each Status (Validated, Archived,
+ * Draft, Paused) are a dev/reviewer reference for how those tags look, so they
+ * shouldn't require changing a filter to find.
  */
 export const DEFAULT_FILTERS: Step2Filters = {
   market: [],
@@ -32,7 +31,7 @@ export const DEFAULT_FILTERS: Step2Filters = {
   product: "",
   seller: "",
   state: ["ACTIVE", "INACTIVE"],
-  status: ["ACTIVE"],
+  status: ["ACTIVE", "ARCHIVED"],
   search: "",
 };
 
