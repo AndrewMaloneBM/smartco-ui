@@ -48,9 +48,6 @@ export const revolveVars = {
   "--rev-success-border": "hsl(151, 56%, 49%)",
   "--rev-info-border": "hsl(219, 43%, 72%)",
   "--rev-warning-border": "hsl(39, 51%, 58%)",
-  // Flag hairline border (🚀 Components "Pill", flag prefix) — neutral text
-  // colour at 40% opacity.
-  "--rev-flag-border": "hsla(260, 16%, 7%, 0.4)",
   // focus (functional.focus.50) — used for focus-visible rings
   "--rev-focus": "hsl(225, 100%, 60%)",
   "--rev-focus-low": "hsl(225, 7%, 78%)",
