@@ -20,7 +20,7 @@ const FLAG_SVG: Record<Market, string> = {
   JP: `<svg viewBox="0 0 40 27" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="27" fill="#F5F5F5"/><g clip-path="url(#c)"><path fill-rule="evenodd" clip-rule="evenodd" d="M0 0.860321H40V27.5303H0V0.860321Z" fill="#F0F0F0"/><path d="M20 21.835C24.6944 21.835 28.5 18.0294 28.5 13.335C28.5 8.64058 24.6944 4.835 20 4.835C15.3056 4.835 11.5 8.64058 11.5 13.335C11.5 18.0294 15.3056 21.835 20 21.835Z" fill="#D80027"/></g><defs><clipPath id="c"><rect width="40" height="26.67" fill="white"/></clipPath></defs></svg>`,
 };
 
-/** Small rounded flag chip (🚀 Components "Pill", flag prefix — 12×8, hairline border). */
+/** Small rounded flag chip (🚀 Components "Pill", flag prefix — 12×8, no border). */
 export function MarketFlag({ market }: { market: Market }) {
   return (
     <span
@@ -31,7 +31,6 @@ export function MarketFlag({ market }: { market: Market }) {
         height: 8,
         borderRadius: 0.67,
         overflow: "hidden",
-        border: "1px solid var(--rev-flag-border)",
         flexShrink: 0,
       }}
     >
