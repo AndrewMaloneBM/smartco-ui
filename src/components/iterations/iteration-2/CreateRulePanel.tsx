@@ -254,12 +254,6 @@ export function CreateRulePanel({
     productIds.length === 0 &&
     targeting === "ALL";
 
-  const fanOut =
-    (markets.length || MARKETS.length) *
-    (categories.length || 1) *
-    (productIds.length || 1) *
-    (targeting === "KEY_SELLERS" ? Math.max(sellerIds.length, 1) : 1);
-
   const errors: string[] = [];
   if (!campaignName.trim()) errors.push("Campaign name is required.");
   if (!rateValid) errors.push("Commission rate must be a number between 0 and 99.99%.");
@@ -301,7 +295,7 @@ export function CreateRulePanel({
             Cancel
           </RevButton>
           <RevButton variant="primary" onClick={submit} disabled={!canSubmit}>
-            Create {fanOut > 1 ? `${fanOut} rules` : "rule"}
+            Create rules
           </RevButton>
         </>
       }

@@ -41,7 +41,7 @@ import { CreateRulePanel, type CreateSeed } from "../iteration-2/CreateRulePanel
 import { ArchiveConfirm, BulkUpdatePanel } from "../iteration-2/BulkUpdatePanel";
 import { TaskPanel } from "../iteration-2/TaskPanel";
 import { RevButton } from "../iteration-2/Drawer";
-import { RevCheckbox, RevInput, RevLink, RevPill, RevSelect, RevTag, type RevTagVariant } from "../iteration-2/revolve";
+import { RevCheckbox, RevInput, RevLink, RevPill, RevSelect, RevSpinner, RevTag, type RevTagVariant } from "../iteration-2/revolve";
 import { makeOverlapTask, makeProcessingTask, makeRejectedTask } from "../iteration-2/scenarios";
 import { PriorityColourReference } from "../iteration-2/PriorityColourReference";
 
@@ -341,7 +341,9 @@ export function Iteration2View({ scenario }: { scenario?: string | null } = {}) 
     showToast(`Archiving ${archivable.length} rule${plural(archivable.length)} — track progress in Tasks.`);
   };
 
-  const ongoingCount = tasks.filter((t) => t.status === "ONGOING").length;
+  const ongoingCount = tasks
+    .filter((t) => t.status === "ONGOING")
+    .reduce((n, t) => n + t.items.length, 0);
 
   // "Priority colour reference" is a static dev-handoff doc, not a table state —
   // it replaces the whole body instead of seeding rules/tasks like the other scenarios.
@@ -364,18 +366,15 @@ export function Iteration2View({ scenario }: { scenario?: string | null } = {}) 
             Create, update, and archive commission rules. Submissions are processed asynchronously as tasks.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {ongoingCount > 0 && (
+            <span className="inline-flex items-center gap-1.5 text-sm font-medium" style={{ color: "var(--rev-text-mid)" }}>
+              <RevSpinner size={16} />
+              {ongoingCount} rule{plural(ongoingCount)} processing
+            </span>
+          )}
           <RevButton variant="secondary" onClick={() => setTasksOpen(true)}>
             Tasks
-            {ongoingCount > 0 && (
-              <span
-                className="ml-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-semibold"
-                style={{ borderRadius: REV_RADIUS.round, background: "var(--rev-warning-bg)", color: "var(--rev-warning)" }}
-              >
-                <span className="h-2.5 w-2.5 animate-spin rounded-full" style={{ border: "2px solid currentColor", borderTopColor: "transparent" }} />
-                {ongoingCount} processing
-              </span>
-            )}
           </RevButton>
           <RevButton variant="primary" onClick={() => setCreateOpen(true)}>
             + New rule
