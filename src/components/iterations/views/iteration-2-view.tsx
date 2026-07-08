@@ -158,7 +158,6 @@ export function Iteration2View({ scenario }: { scenario?: string | null } = {}) 
   const [updateOpen, setUpdateOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [tasksOpen, setTasksOpen] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
   const [createInitial, setCreateInitial] = useState<CreateSeed | null>(null);
   const [focusTaskId, setFocusTaskId] = useState<string | null>(null);
 
@@ -176,7 +175,6 @@ export function Iteration2View({ scenario }: { scenario?: string | null } = {}) 
     setUpdateOpen(false);
     setArchiveOpen(false);
     setTasksOpen(false);
-    setToast(null);
     setCreateInitial(null);
     setFocusTaskId(null);
 
@@ -253,12 +251,6 @@ export function Iteration2View({ scenario }: { scenario?: string | null } = {}) 
     setPage(1);
   }, [scenario]);
 
-  const showToast = (msg: string) => {
-    setToast(msg);
-    const t = setTimeout(() => setToast(null), 4500);
-    timers.current.push(t);
-  };
-
   const rows = useMemo(() => sortRules(filterRules(rules, filters), sort.field, sort.dir), [rules, filters, sort]);
 
   useEffect(() => setPage(1), [filters, sort]);
@@ -304,9 +296,8 @@ export function Iteration2View({ scenario }: { scenario?: string | null } = {}) 
   const selectedCount = selectedIds.length;
 
   // ── Async task lifecycle: push ONGOING task, then resolve + commit ───────
-  // Submit a task: queue it ONGOING and resolve (commit) after a simulated delay.
-  // Does NOT open the Tasks panel — submitting just confirms via toast; the user
-  // opens Tasks when they want to check progress.
+  // Queue a task ONGOING and resolve (commit) after a simulated delay. Callers
+  // (goToTask) handle redirecting to the Task drawer — this just runs it.
   const runTask = (task: Task) => {
     setTasks((prev) => [task, ...prev]);
     const t = setTimeout(() => {
@@ -318,27 +309,33 @@ export function Iteration2View({ scenario }: { scenario?: string | null } = {}) 
 
   const plural = (n: number) => (n === 1 ? "" : "s");
 
+  // Per the Step 2 design review (Jul 6): submitting redirects straight to the
+  // Task drawer, focused on the new task, instead of a loading state on the CTA.
+  const goToTask = (task: Task) => {
+    runTask(task);
+    setFocusTaskId(task.id);
+    setTasksOpen(true);
+  };
+
   const onCreate = (input: Omit<CreateInput, "author">) => {
     const task = buildCreateTask({ ...input, author: AUTHOR }, rules, new Date().toISOString());
-    runTask(task);
     setCreateOpen(false);
-    showToast(`Processing ${task.items.length} rule${plural(task.items.length)} — track progress in Tasks.`);
+    goToTask(task);
   };
 
   const onBulkUpdate = (values: BulkUpdateValues) => {
-    const n = selectedIds.length;
-    runTask(buildUpdateTask(selectedIds, values, rules, new Date().toISOString()));
+    const task = buildUpdateTask(selectedIds, values, rules, new Date().toISOString());
     setUpdateOpen(false);
     setSelected(new Set());
-    showToast(`Updating ${n} rule${plural(n)} — track progress in Tasks.`);
+    goToTask(task);
   };
 
   const onArchive = () => {
     const archivable = selectedIds.filter((id) => rules.find((r) => r.id === id)?.status !== "ARCHIVED");
-    runTask(buildArchiveTask(archivable, rules, new Date().toISOString()));
+    const task = buildArchiveTask(archivable, rules, new Date().toISOString());
     setArchiveOpen(false);
     setSelected(new Set());
-    showToast(`Archiving ${archivable.length} rule${plural(archivable.length)} — track progress in Tasks.`);
+    goToTask(task);
   };
 
   const ongoingCount = tasks
@@ -528,27 +525,6 @@ export function Iteration2View({ scenario }: { scenario?: string | null } = {}) 
       </div>
 
       {/* Panels */}
-      {/* Toast — confirms an async submission without stealing focus to the Tasks panel */}
-      {toast && (
-        <div
-          className="fixed bottom-6 right-6 z-[60] flex items-center gap-4 px-4 py-3"
-          style={{ background: "var(--rev-text-hi)", color: "#fff", borderRadius: REV_RADIUS.md, boxShadow: REV_SHADOW.long, maxWidth: 380 }}
-          role="status"
-        >
-          <span className="text-sm">{toast}</span>
-          <button
-            type="button"
-            onClick={() => {
-              setTasksOpen(true);
-              setToast(null);
-            }}
-            className="shrink-0 text-sm font-semibold underline hover:opacity-80"
-          >
-            View
-          </button>
-        </div>
-      )}
-
       <CreateRulePanel open={createOpen} onClose={() => setCreateOpen(false)} onSubmit={onCreate} initial={createInitial} />
       <BulkUpdatePanel open={updateOpen} count={selectedCount} onClose={() => setUpdateOpen(false)} onSubmit={onBulkUpdate} />
       <ArchiveConfirm open={archiveOpen} count={selectedCount} onClose={() => setArchiveOpen(false)} onConfirm={onArchive} />

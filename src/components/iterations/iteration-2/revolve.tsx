@@ -86,6 +86,51 @@ export function RevTagDot() {
 }
 
 /**
+ * 🚀 Components "Toast" (tone=success, no description) — dark surface, check
+ * icon, single-line message, bold action. `visible` drives the slide/fade so
+ * the caller can animate mount (render hidden, flip to visible next frame)
+ * and dismiss (flip to hidden, then unmount after the transition ends).
+ */
+export function RevToast({
+  visible,
+  message,
+  actionLabel,
+  onAction,
+}: {
+  visible: boolean;
+  message: string;
+  actionLabel?: string;
+  onAction?: () => void;
+}) {
+  return (
+    <div
+      role="status"
+      className="flex items-center gap-4 px-4 py-3 transition-all duration-300 ease-out"
+      style={{
+        width: 400,
+        maxWidth: "calc(100vw - 48px)",
+        borderRadius: REV_RADIUS.lg,
+        background: "#393b40",
+        boxShadow: "0px 8px 16px 0px rgba(15,17,23,0.12)",
+        transform: visible ? "translateX(0)" : "translateX(120%)",
+        opacity: visible ? 1 : 0,
+      }}
+    >
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0">
+        <path d="M17.0303 9.53033C17.3232 9.23744 17.3232 8.76256 17.0303 8.46967C16.7374 8.17678 16.2626 8.17678 15.9697 8.46967L10.5 13.9393L8.03033 11.4697C7.73744 11.1768 7.26256 11.1768 6.96967 11.4697C6.67678 11.7626 6.67678 12.2374 6.96967 12.5303L9.61612 15.1768C10.1043 15.6649 10.8957 15.6649 11.3839 15.1768L17.0303 9.53033Z" fill="white" />
+        <path fillRule="evenodd" clipRule="evenodd" d="M12 2.25C6.61522 2.25 2.25 6.61522 2.25 12C2.25 17.3848 6.61522 21.75 12 21.75C17.3848 21.75 21.75 17.3848 21.75 12C21.75 6.61522 17.3848 2.25 12 2.25ZM3.75 12C3.75 7.44365 7.44365 3.75 12 3.75C16.5563 3.75 20.25 7.44365 20.25 12C20.25 16.5563 16.5563 20.25 12 20.25C7.44365 20.25 3.75 16.5563 3.75 12Z" fill="white" />
+      </svg>
+      <p className="flex-1 text-base" style={{ color: "#fff" }}>{message}</p>
+      {actionLabel && (
+        <button type="button" onClick={onAction} className="shrink-0 text-base font-semibold hover:opacity-80" style={{ color: "#fff" }}>
+          {actionLabel}
+        </button>
+      )}
+    </div>
+  );
+}
+
+/**
  * 🖼️ Icons "Spinner" glyph — an open ring, spun via CSS. Path traced from the
  * Figma source (viewBox 0 0 24 24); fill is currentColor so it inherits context.
  */

@@ -11,6 +11,12 @@ import type { CreateInput } from "./engine";
 const RATE_MIN = 2;
 const RATE_MAX = 20;
 
+/** Today as a `yyyy-mm-dd` string in local time, for a date input's `min`. */
+function todayDateValue(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 function Field({
   label,
   hint,
@@ -246,6 +252,7 @@ export function CreateRulePanel({
   const rateValid = !Number.isNaN(rateNum) && rateNum >= 0 && rateNum <= 99.99;
   const rateOutOfBand = rateValid && (rateNum < RATE_MIN || rateNum > RATE_MAX);
   const datesValid = !(startDate && endDate) || new Date(endDate) >= new Date(startDate);
+  const startDateValid = !startDate || startDate >= todayDateValue();
 
   // PRD: a rule can't be an all-markets/all-categories/all-products/all-sellers blanket.
   const tooBroad =
@@ -257,6 +264,7 @@ export function CreateRulePanel({
   const errors: string[] = [];
   if (!campaignName.trim()) errors.push("Campaign name is required.");
   if (!rateValid) errors.push("Commission rate must be a number between 0 and 99.99%.");
+  if (!startDateValid) errors.push("Start date can't be in the past.");
   if (!datesValid) errors.push("End date must be on or after the start date.");
   if (tooBroad) errors.push("Narrow the scope — specify at least one market, category, product, or seller.");
   // A specific product already belongs to one category, so requiring both on
@@ -393,8 +401,12 @@ export function CreateRulePanel({
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
+              min={todayDateValue()}
               className="w-full px-3 py-2 text-sm"
-              style={inputStyle}
+              style={{
+                ...inputStyle,
+                borderColor: !startDateValid ? "var(--rev-danger)" : (inputStyle.border as string),
+              }}
             />
           </Field>
           <Field label="End date" optional>
