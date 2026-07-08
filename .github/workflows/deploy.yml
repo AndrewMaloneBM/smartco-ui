@@ -6,9 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 # Allow one concurrent deploy; don't cancel an in-progress production deploy.
 concurrency:
@@ -16,7 +14,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,19 +27,12 @@ jobs:
         run: npm run build
         env:
           GITHUB_PAGES: "true"
-      # Actions-based Pages deploys skip Jekyll, but Next emits a _next dir — keep .nojekyll as a guard.
+      # gh-pages branch deploys skip Jekyll, but Next emits a _next dir — keep .nojekyll as a guard.
       - run: touch out/.nojekyll
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      # Pushes the build straight to the gh-pages branch (Pages source: "Deploy from branch").
+      # Switched from the Actions/Pages-artifact integration after it got stuck indefinitely
+      # in "deployment_queued" on GitHub's side across multiple unrelated commits.
+      - uses: peaceiris/actions-gh-pages@v4
         with:
-          path: ./out
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - uses: actions/deploy-pages@v4
-        id: deployment
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./out
