@@ -55,28 +55,26 @@ const KIND_LABEL: Record<Task["kind"], string> = {
   ARCHIVE: "Archive",
 };
 
-type TaskTab = "ALL" | "COMPLETED" | "OVERLAPPED" | "ERRORED";
-type TaskCategory = "PROCESSING" | "COMPLETED" | "OVERLAPPED" | "ERRORED";
+// Tabs are the task's status (Ongoing/Completed/Errored), not its report detail —
+// overlap is a per-rule outcome, shown as an inline tag on a completed task
+// (taskOutcome below), not a status of its own.
+type TaskTab = "ALL" | "ONGOING" | "COMPLETED" | "ERRORED";
+type TaskCategory = "ONGOING" | "COMPLETED" | "ERRORED";
 
-/**
- * Bucket a task by its most severe outcome so it lands in exactly one tab:
- * any rejected/error → Errored; else any overlap → Overlapped; else Completed.
- * In-progress tasks have no outcome yet and only appear under All.
- */
+/** Bucket a task by status: in-progress → Ongoing; any rejected/error → Errored; else Completed. */
 function taskCategory(t: Task): TaskCategory {
-  if (t.status === "ONGOING") return "PROCESSING";
+  if (t.status === "ONGOING") return "ONGOING";
   if (t.kind === "CREATE") {
     const has = (r: RuleResult) => t.items.some((i) => i.result === r);
     if (has("STRICT_CONFLICT") || has("SYSTEM_ERROR")) return "ERRORED";
-    if (has("OVERLAP")) return "OVERLAPPED";
   }
   return "COMPLETED";
 }
 
 const TAB_LABEL: Record<TaskTab, string> = {
   ALL: "All",
+  ONGOING: "Ongoing",
   COMPLETED: "Completed",
-  OVERLAPPED: "Overlapped",
   ERRORED: "Errored",
 };
 
@@ -238,7 +236,7 @@ export function TaskPanel({
           <RevTabs
             value={tab}
             onChange={(v) => setTab(v as TaskTab)}
-            tabs={(["ALL", "COMPLETED", "OVERLAPPED", "ERRORED"] as TaskTab[]).map((tb) => ({
+            tabs={(["ALL", "ONGOING", "COMPLETED", "ERRORED"] as TaskTab[]).map((tb) => ({
               value: tb,
               label: TAB_LABEL[tb],
               count: tb === "ALL" ? tasks.length : tasks.filter((t) => taskCategory(t) === tb).length,
@@ -308,6 +306,10 @@ export function TaskPanel({
             <span>
               <strong className="font-semibold">Rules</strong>{" "}
               <span style={{ color: "var(--rev-text-hi)" }}>{selected.items.length}</span>
+            </span>
+            <span>
+              <strong className="font-semibold">Submitted by</strong>{" "}
+              <span style={{ color: "var(--rev-text-hi)" }}>{selected.author}</span>
             </span>
           </div>
           <TaskDetail task={selected} />

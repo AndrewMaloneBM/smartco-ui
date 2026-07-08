@@ -40,6 +40,8 @@ export interface Task {
   id: string;
   kind: TaskKind;
   submittedAt: string; // ISO timestamp
+  /** Who submitted the task — shown in the Task drawer for audit purposes. */
+  author: string;
   durationMs: number; // simulated processing time
   status: TaskStatus;
   /** New rules to commit once a CREATE task resolves (excludes strict conflicts). */
@@ -302,6 +304,7 @@ export function buildCreateTask(
     id: `TASK-${shortId(nowIso + input.campaignName)}`,
     kind: "CREATE",
     submittedAt: nowIso,
+    author: input.author,
     durationMs: 1200 + items.length * 120,
     status: "ONGOING",
     pendingRules,
@@ -313,7 +316,8 @@ export function buildUpdateTask(
   ruleIds: string[],
   values: BulkUpdateValues,
   existing: Step1Rule[],
-  nowIso: string
+  nowIso: string,
+  author: string
 ): Task {
   const byId = new Map(existing.map((r) => [r.id, r]));
   const items: TaskItem[] = ruleIds.map((id) => {
@@ -329,6 +333,7 @@ export function buildUpdateTask(
     id: `TASK-${shortId(nowIso + ruleIds.join())}`,
     kind: "UPDATE",
     submittedAt: nowIso,
+    author,
     durationMs: 1000 + ruleIds.length * 100,
     status: "ONGOING",
     pendingRules: [],
@@ -340,7 +345,8 @@ export function buildUpdateTask(
 export function buildArchiveTask(
   ruleIds: string[],
   existing: Step1Rule[],
-  nowIso: string
+  nowIso: string,
+  author: string
 ): Task {
   const byId = new Map(existing.map((r) => [r.id, r]));
   const items: TaskItem[] = ruleIds.map((id) => {
@@ -356,6 +362,7 @@ export function buildArchiveTask(
     id: `TASK-${shortId(nowIso + "archive" + ruleIds.join())}`,
     kind: "ARCHIVE",
     submittedAt: nowIso,
+    author,
     durationMs: 900 + ruleIds.length * 80,
     status: "ONGOING",
     pendingRules: [],

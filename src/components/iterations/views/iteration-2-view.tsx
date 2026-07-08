@@ -40,7 +40,7 @@ import {
 import { CreateRulePanel, type CreateSeed } from "../iteration-2/CreateRulePanel";
 import { ArchiveConfirm, BulkUpdatePanel } from "../iteration-2/BulkUpdatePanel";
 import { TaskPanel } from "../iteration-2/TaskPanel";
-import { RevButton } from "../iteration-2/Drawer";
+import { DRAWER_TRANSITION_MS, RevButton } from "../iteration-2/Drawer";
 import { RevCheckbox, RevInput, RevLink, RevPill, RevSelect, RevSpinner, RevTag, type RevTagVariant } from "../iteration-2/revolve";
 import { makeOverlapTask, makeProcessingTask, makeRejectedTask } from "../iteration-2/scenarios";
 import { PriorityColourReference } from "../iteration-2/PriorityColourReference";
@@ -311,10 +311,17 @@ export function Iteration2View({ scenario }: { scenario?: string | null } = {}) 
 
   // Per the Step 2 design review (Jul 6): submitting redirects straight to the
   // Task drawer, focused on the new task, instead of a loading state on the CTA.
+  // The task itself starts right away (its "submitted" time is the click), but the
+  // drawer waits out the originating panel's close animation so the two read as a
+  // sequence — one drawer sliding shut, then the Task drawer sliding open — rather
+  // than overlapping mid-slide.
   const goToTask = (task: Task) => {
     runTask(task);
-    setFocusTaskId(task.id);
-    setTasksOpen(true);
+    const t = setTimeout(() => {
+      setFocusTaskId(task.id);
+      setTasksOpen(true);
+    }, DRAWER_TRANSITION_MS);
+    timers.current.push(t);
   };
 
   const onCreate = (input: Omit<CreateInput, "author">) => {
@@ -324,7 +331,7 @@ export function Iteration2View({ scenario }: { scenario?: string | null } = {}) 
   };
 
   const onBulkUpdate = (values: BulkUpdateValues) => {
-    const task = buildUpdateTask(selectedIds, values, rules, new Date().toISOString());
+    const task = buildUpdateTask(selectedIds, values, rules, new Date().toISOString(), AUTHOR);
     setUpdateOpen(false);
     setSelected(new Set());
     goToTask(task);
@@ -332,7 +339,7 @@ export function Iteration2View({ scenario }: { scenario?: string | null } = {}) 
 
   const onArchive = () => {
     const archivable = selectedIds.filter((id) => rules.find((r) => r.id === id)?.status !== "ARCHIVED");
-    const task = buildArchiveTask(archivable, rules, new Date().toISOString());
+    const task = buildArchiveTask(archivable, rules, new Date().toISOString(), AUTHOR);
     setArchiveOpen(false);
     setSelected(new Set());
     goToTask(task);
