@@ -6,12 +6,14 @@ import type { ComponentType } from "react";
 import { OriginalView } from "./views/original-view";
 import { Iteration1View } from "./views/iteration-1-view";
 import { Iteration2View } from "./views/iteration-2-view";
-import { Step3View, Step4View, Step5View } from "./views/step-placeholders";
+import { Iteration3View } from "./views/iteration-3-view";
+import { Step4View, Step5View } from "./views/step-placeholders";
 import { STEP2_SCENARIOS } from "./iteration-2/scenarios";
+import { STEP3_SCENARIOS } from "./iteration-3/scenarios";
 
 /** Props every iteration view may receive. Views that ignore it stay prop-less. */
 export interface IterationViewProps {
-  /** Active dev scenario id (only Step 2 uses this today). */
+  /** Active dev scenario id (Steps 2 and 3 use this today). */
   scenario?: string | null;
 }
 
@@ -91,10 +93,13 @@ export const ITERATIONS: IterationDef[] = [
     id: "step-3",
     step: "Step #3",
     title: "Grade × Battery Type",
-    blurb: "Tech investigation ongoing",
+    blurb: "Add Grade + Offer type targeting",
     badge: "3",
     status: "design-wip",
-    Component: Step3View,
+    prdUrl:
+      "https://backmarket.atlassian.net/wiki/spaces/sxp/pages/6505959304/sub-prd+Step+3+-+Granularity+upgrade+for+SmartCo",
+    scenarios: STEP3_SCENARIOS,
+    Component: Iteration3View,
   },
   {
     id: "step-4",
