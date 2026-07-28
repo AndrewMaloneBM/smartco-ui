@@ -24,6 +24,8 @@ export interface ScenarioDef {
 
 export type IterationStatus =
   | "live"
+  | "in-development"
+  | "design-wip"
   | "in-progress"
   | "ready-for-dev"
   | "awaiting-prd"
@@ -68,7 +70,7 @@ export const ITERATIONS: IterationDef[] = [
     title: "View rules",
     blurb: "Read-only rules dashboard",
     badge: "1",
-    status: "ready-for-dev",
+    status: "live",
     prdUrl:
       "https://backmarket.atlassian.net/wiki/spaces/sxp/pages/6460410942/sub-prd+Step+1+-+View+rules+-+SmartCo",
     Component: Iteration1View,
@@ -79,7 +81,7 @@ export const ITERATIONS: IterationDef[] = [
     title: "Create, update, archive",
     blurb: "Create & manage rules (+ Product ID)",
     badge: "2",
-    status: "in-progress",
+    status: "in-development",
     prdUrl:
       "https://backmarket.atlassian.net/wiki/spaces/sxp/pages/6503008637/sub-prd+Step+2+-+Create+update+archive+-+SmartCo",
     scenarios: STEP2_SCENARIOS,
@@ -89,9 +91,9 @@ export const ITERATIONS: IterationDef[] = [
     id: "step-3",
     step: "Step #3",
     title: "Grade × Battery Type",
-    blurb: "Full granularity (OMS dependency)",
+    blurb: "Tech investigation ongoing",
     badge: "3",
-    status: "planned",
+    status: "design-wip",
     Component: Step3View,
   },
   {
@@ -118,6 +120,8 @@ export const DEFAULT_ITERATION = ITERATIONS[0].id;
 
 export const STATUS_LABEL: Record<IterationStatus, string> = {
   live: "Live",
+  "in-development": "In development",
+  "design-wip": "Design WIP",
   "in-progress": "Work in progress",
   "ready-for-dev": "Ready for dev",
   "awaiting-prd": "Awaiting PRD",
@@ -126,6 +130,8 @@ export const STATUS_LABEL: Record<IterationStatus, string> = {
 
 export const STATUS_STYLES: Record<IterationStatus, string> = {
   live: "bg-emerald-100 text-emerald-700",
+  "in-development": "bg-yellow-100 text-yellow-700",
+  "design-wip": "bg-violet-100 text-violet-700",
   "in-progress": "bg-violet-100 text-violet-700",
   "ready-for-dev": "bg-blue-100 text-blue-700",
   "awaiting-prd": "bg-amber-100 text-amber-700",
