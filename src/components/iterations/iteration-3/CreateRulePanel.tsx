@@ -261,11 +261,16 @@ export function CreateRulePanel({
   const datesValid = !(startDate && endDate) || new Date(endDate) >= new Date(startDate);
   const startDateValid = !startDate || startDate >= todayDateValue();
 
-  // PRD: a rule can't be an all-markets/all-categories/all-products/all-sellers blanket.
+  // PRD: a rule can't be a totally unscoped blanket. Grade and Offer type count as
+  // valid narrowing too — a Grade-only rule (e.g. "all EXCELLENT-grade devices,
+  // any market") is exactly what Step 3 adds, so it can't require Market/Category/
+  // Product/Seller on top of that.
   const tooBroad =
     markets.length === 0 &&
     categories.length === 0 &&
     productIds.length === 0 &&
+    grades.length === 0 &&
+    !offerType &&
     targeting === "ALL";
 
   const errors: string[] = [];
@@ -273,7 +278,7 @@ export function CreateRulePanel({
   if (!rateValid) errors.push("Commission rate must be a number between 0 and 99.99%.");
   if (!startDateValid) errors.push("Start date can't be in the past.");
   if (!datesValid) errors.push("End date must be on or after the start date.");
-  if (tooBroad) errors.push("Narrow the scope — specify at least one market, category, product, or seller.");
+  if (tooBroad) errors.push("Narrow the scope — specify at least one market, category, product, grade, offer type, or seller.");
   // A specific product already belongs to one category, so requiring both on
   // the same rule is contradictory.
   if (categories.length > 0 && productIds.length > 0)
@@ -311,7 +316,12 @@ export function CreateRulePanel({
           <RevButton variant="secondary" onClick={onClose}>
             Cancel
           </RevButton>
-          <RevButton variant="primary" onClick={submit} disabled={!canSubmit}>
+          <RevButton
+            variant="primary"
+            onClick={submit}
+            aria-disabled={!canSubmit}
+            style={!canSubmit ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
+          >
             Create rules
           </RevButton>
         </>
