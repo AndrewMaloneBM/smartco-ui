@@ -16,15 +16,6 @@ export function Step2View() {
   );
 }
 
-export function Step3View() {
-  return (
-    <IterationPlaceholder title="Step #3 — Grade × Battery Type" status="Planned">
-      Supports the full granularity model (Marketplace × Market × Category ×
-      Product ID × Seller × Grade × Battery Type). Depends on OMS.
-    </IterationPlaceholder>
-  );
-}
-
 export function Step4View() {
   return (
     <IterationPlaceholder title="Step #4 — Status workflow" status="Planned">
