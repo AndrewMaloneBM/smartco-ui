@@ -1,18 +1,24 @@
 import type { Market } from "@/lib/types";
 import { STEP1_RULES } from "../iteration-1/mock-rules";
-import { OFFER_TYPES, type Step3Rule } from "./logic";
+import { BRANDS, OFFER_TYPES, type Step3Rule } from "./logic";
 
 /**
- * Deterministic-by-index demo Offer type spread: mostly null (the PRD's
- * default — applies to all values), with enough of each specific code
- * represented that the new column/filter/scenarios have something real to
- * show. Grade is NOT backfilled here — `STEP1_RULES` already has real,
- * curated grade values (Adri's original `CommissionRule.grade` field); Step 3
- * just surfaces them, it doesn't invent new ones.
+ * Deterministic-by-index demo Offer type / Brand spread: mostly null (the
+ * PRD's default — applies to all values), with enough of each specific value
+ * represented that the new columns/filters/scenarios have something real to
+ * show. The three cycles are offset so they don't always land on (or skip)
+ * the same rows. Grade is NOT backfilled here — `STEP1_RULES` already has
+ * real, curated grade values (Adri's original `CommissionRule.grade` field);
+ * Step 3 just surfaces them, it doesn't invent new ones.
  */
 function demoOfferType(index: number): Step3Rule["offer_type"] {
   const slot = (index + 3) % 9;
   return slot < OFFER_TYPES.length ? OFFER_TYPES[slot].code : null;
+}
+
+function demoBrand(index: number): Step3Rule["brand"] {
+  const slot = (index + 6) % 10;
+  return slot < BRANDS.length ? BRANDS[slot] : null;
 }
 
 /**
@@ -20,7 +26,8 @@ function demoOfferType(index: number): Step3Rule["offer_type"] {
  * Step 2 mutates rules (create / bulk update / archive), so the view holds the
  * rules in React state — this just provides the initial (deep-cloned) snapshot so
  * resetting or remounting starts from a clean baseline. Step 3 additionally backfills
- * the new Offer type field (real rules default to null — unaffected, per the PRD).
+ * the new Offer type / Brand fields (real rules default to null — unaffected, per
+ * the PRD).
  */
 export function seedRules(): Step3Rule[] {
   return STEP1_RULES.map((r, i) => ({
@@ -28,6 +35,7 @@ export function seedRules(): Step3Rule[] {
     seller_ids: [...r.seller_ids],
     conflicts: [...r.conflicts],
     offer_type: demoOfferType(i),
+    brand: demoBrand(i),
   }));
 }
 

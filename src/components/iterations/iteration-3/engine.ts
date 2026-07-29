@@ -1,7 +1,7 @@
 import type { Grade, Market, SellerTargeting } from "@/lib/types";
 import { MARKETS } from "@/lib/types";
 import { demoPriority, type Step1Rule } from "../iteration-1/logic";
-import type { OfferTypeCode, Step3Rule } from "./logic";
+import type { Brand, OfferTypeCode, Step3Rule } from "./logic";
 
 /**
  * Step 2 write engine — pure functions for conflict detection and the async task
@@ -38,6 +38,7 @@ export interface BulkUpdateValues {
   /** Step 3: present (even as null, meaning "all grades") = apply to selection. */
   grade?: Grade | null;
   offer_type?: OfferTypeCode | null;
+  brand?: Brand | null;
 }
 
 export interface Task {
@@ -198,6 +199,7 @@ export interface CreateInput {
   productIds: string[]; // empty = all products (one rule, product_id=null)
   grades: Grade[]; // empty = all grades (one rule, grade=null)
   offerType: OfferTypeCode | null; // single value — not a fan-out dimension
+  brands: Brand[]; // empty = all brands (one rule, brand=null)
   commissionRate: number;
   startDate: string | null;
   endDate: string | null;
@@ -206,12 +208,12 @@ export interface CreateInput {
 
 /**
  * Build a CREATE task. Multi-selects fan out: markets × categories × productIds ×
- * grades × sellerIds — a rule scopes to exactly one value per dimension (or all), so
- * picking several key sellers creates one seller-specific rule per seller, same as
- * picking several categories or grades creates one rule per value. Empty
- * market/category/product/grade = a single "all" rule for that dimension. Offer
- * type is a single value (not fanned out) applied to every candidate. Each
- * candidate is classified; strict conflicts are not created.
+ * grades × brands × sellerIds — a rule scopes to exactly one value per dimension
+ * (or all), so picking several key sellers creates one seller-specific rule per
+ * seller, same as picking several categories, grades, or brands creates one rule
+ * per value. Empty market/category/product/grade/brand = a single "all" rule for
+ * that dimension. Offer type is a single value (not fanned out) applied to every
+ * candidate. Each candidate is classified; strict conflicts are not created.
  */
 export function buildCreateTask(
   input: CreateInput,
@@ -222,6 +224,7 @@ export function buildCreateTask(
   const categories = input.categories.length ? input.categories : [null];
   const products = input.productIds.length ? input.productIds : [null];
   const grades = input.grades.length ? input.grades : [null];
+  const brands = input.brands.length ? input.brands : [null];
   const sellers: { targeting: SellerTargeting; ids: string[] }[] =
     input.sellerTargeting === "KEY_SELLERS" && input.sellerIds.length
       ? input.sellerIds.map((id) => ({ targeting: "KEY_SELLERS" as const, ids: [id] }))
@@ -242,69 +245,72 @@ export function buildCreateTask(
     for (const category of categories) {
       for (const product of products) {
         for (const grade of grades) {
-          for (const seller of sellers) {
-            const scope = {
-              market,
-              category,
-              product_id: product,
-              seller_targeting: seller.targeting,
-              seller_ids: seller.ids,
-            };
-            const { result, relatedRuleId } = classifyScope(scope, working);
-            const label = scopeLabel(scope);
+          for (const brand of brands) {
+            for (const seller of sellers) {
+              const scope = {
+                market,
+                category,
+                product_id: product,
+                seller_targeting: seller.targeting,
+                seller_ids: seller.ids,
+              };
+              const { result, relatedRuleId } = classifyScope(scope, working);
+              const label = scopeLabel(scope);
 
-            if (result === "STRICT_CONFLICT") {
+              if (result === "STRICT_CONFLICT") {
+                items.push({
+                  ruleId: "—",
+                  scope: label,
+                  result,
+                  message: `Not created — an identical rule already exists (${relatedRuleId}).`,
+                  relatedRuleId,
+                });
+                continue;
+              }
+
+              const id = nextRuleId(working, i++);
+              const rule: Step3Rule = {
+                id,
+                name: input.campaignName,
+                market,
+                category,
+                product_id: product,
+                grade,
+                battery_type: null,
+                offer_type: input.offerType,
+                brand,
+                seller_targeting: seller.targeting,
+                seller_ids: [...seller.ids],
+                commission_rate: input.commissionRate,
+                start_date: startDate,
+                end_date: input.endDate,
+                state: computeState(
+                  { status: "VALIDATED", start_date: startDate, end_date: input.endDate },
+                  nowIso
+                ),
+                status: "VALIDATED",
+                created_by: input.author,
+                created_at: nowIso,
+                conflicts: relatedRuleId ? [relatedRuleId] : [],
+                orderlines_30d: null,
+                gmv_30d: null,
+                // Real backend would compute this on save; we just need placeholder
+                // display data for the demo, not a reproduction of its logic.
+                priority: demoPriority(id),
+              };
+              working.push(rule);
+              pendingRules.push(rule);
               items.push({
-                ruleId: "—",
+                ruleId: id,
                 scope: label,
                 result,
-                message: `Not created — an identical rule already exists (${relatedRuleId}).`,
+                message:
+                  result === "OVERLAP"
+                    ? `Created — a broader rule (${relatedRuleId}) already covers this scope and takes priority.`
+                    : "Created successfully.",
                 relatedRuleId,
               });
-              continue;
             }
-
-            const id = nextRuleId(working, i++);
-            const rule: Step3Rule = {
-              id,
-              name: input.campaignName,
-              market,
-              category,
-              product_id: product,
-              grade,
-              battery_type: null,
-              offer_type: input.offerType,
-              seller_targeting: seller.targeting,
-              seller_ids: [...seller.ids],
-              commission_rate: input.commissionRate,
-              start_date: startDate,
-              end_date: input.endDate,
-              state: computeState(
-                { status: "VALIDATED", start_date: startDate, end_date: input.endDate },
-                nowIso
-              ),
-              status: "VALIDATED",
-              created_by: input.author,
-              created_at: nowIso,
-              conflicts: relatedRuleId ? [relatedRuleId] : [],
-              orderlines_30d: null,
-              gmv_30d: null,
-              // Real backend would compute this on save; we just need placeholder
-              // display data for the demo, not a reproduction of its logic.
-              priority: demoPriority(id),
-            };
-            working.push(rule);
-            pendingRules.push(rule);
-            items.push({
-              ruleId: id,
-              scope: label,
-              result,
-              message:
-                result === "OVERLAP"
-                  ? `Created — a broader rule (${relatedRuleId}) already covers this scope and takes priority.`
-                  : "Created successfully.",
-              relatedRuleId,
-            });
           }
         }
       }
@@ -400,6 +406,7 @@ export function commitTask(task: Task, rules: Step3Rule[], nowIso: string): Step
         ...(v.end_date !== undefined ? { end_date: v.end_date } : {}),
         ...(v.grade !== undefined ? { grade: v.grade } : {}),
         ...(v.offer_type !== undefined ? { offer_type: v.offer_type } : {}),
+        ...(v.brand !== undefined ? { brand: v.brand } : {}),
       };
       next.state = computeState(next, nowIso);
       return next;
