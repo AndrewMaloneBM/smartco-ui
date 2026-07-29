@@ -5,7 +5,7 @@ import { GRADES, type Grade } from "@/lib/types";
 import { REV_RADIUS } from "../iteration-1/tokens";
 import { Drawer, RevButton } from "./Drawer";
 import type { BulkUpdateValues } from "./engine";
-import { OFFER_TYPES, type OfferTypeCode } from "./logic";
+import { BRANDS, OFFER_TYPES, type Brand, type OfferTypeCode } from "./logic";
 
 const inputStyle: React.CSSProperties = {
   background: "var(--rev-surface-low)",
@@ -36,12 +36,14 @@ export function BulkUpdatePanel({
   const [editEnd, setEditEnd] = useState(false);
   const [editGrade, setEditGrade] = useState(false);
   const [editOfferType, setEditOfferType] = useState(false);
+  const [editBrand, setEditBrand] = useState(false);
   const [name, setName] = useState("");
   const [rate, setRate] = useState("");
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
   const [grade, setGrade] = useState(""); // "" = All grades
   const [offerType, setOfferType] = useState(""); // "" = All offer types
+  const [brand, setBrand] = useState(""); // "" = All brands
   const [touched, setTouched] = useState(false);
 
   useEffect(() => {
@@ -52,19 +54,21 @@ export function BulkUpdatePanel({
       setEditEnd(false);
       setEditGrade(false);
       setEditOfferType(false);
+      setEditBrand(false);
       setName("");
       setRate("");
       setStart("");
       setEnd("");
       setGrade("");
       setOfferType("");
+      setBrand("");
       setTouched(false);
     }
   }, [open]);
 
   const rateNum = rate === "" ? NaN : Number(rate);
   const rateValid = !editRate || (!Number.isNaN(rateNum) && rateNum >= 0 && rateNum <= 99.99);
-  const anyField = editName || editRate || editStart || editEnd || editGrade || editOfferType;
+  const anyField = editName || editRate || editStart || editEnd || editGrade || editOfferType || editBrand;
   const errors: string[] = [];
   if (!anyField) errors.push("Tick at least one field to update.");
   if (editName && !name.trim()) errors.push("Campaign name can't be empty.");
@@ -81,6 +85,7 @@ export function BulkUpdatePanel({
     if (editEnd) values.end_date = end || null;
     if (editGrade) values.grade = grade ? (grade as Grade) : null;
     if (editOfferType) values.offer_type = offerType ? (Number(offerType) as OfferTypeCode) : null;
+    if (editBrand) values.brand = brand ? (brand as Brand) : null;
     onSubmit(values);
   };
 
@@ -175,6 +180,16 @@ export function BulkUpdatePanel({
             {OFFER_TYPES.map((o) => (
               <option key={o.code} value={o.code}>
                 {o.label}
+              </option>
+            ))}
+          </select>
+        </Row>
+        <Row on={editBrand} setOn={setEditBrand} label="Brand">
+          <select value={brand} onChange={(e) => setBrand(e.target.value)} className="w-full px-3 py-2 text-sm" style={inputStyle}>
+            <option value="">All brands</option>
+            {BRANDS.map((b) => (
+              <option key={b} value={b}>
+                {b}
               </option>
             ))}
           </select>

@@ -21,6 +21,7 @@ import {
   type Step1Rule,
 } from "../iteration-1/logic";
 import {
+  BRANDS,
   DEFAULT_FILTERS,
   DEFAULT_SORT,
   OFFER_TYPES,
@@ -28,6 +29,7 @@ import {
   filterRules,
   offerTypeLabel,
   sortRules,
+  type Brand,
   type OfferTypeCode,
   type Step3Filters,
   type Step3Rule,
@@ -196,11 +198,18 @@ export function Iteration3View({ scenario }: { scenario?: string | null } = {}) 
         setCreateInitial({ campaignName: "Outlet clearance", offerType: "10" });
         setCreateOpen(true);
         break;
+      case "brand-create":
+        setCreateInitial({ campaignName: "Apple devices push", brands: ["Apple"] });
+        setCreateOpen(true);
+        break;
       case "grade-filter":
         filtersNext = { ...DEFAULT_FILTERS, grade: ["EXCELLENT"] };
         break;
       case "offer-type-filter":
         filtersNext = { ...DEFAULT_FILTERS, offerType: [10] };
+        break;
+      case "brand-filter":
+        filtersNext = { ...DEFAULT_FILTERS, brand: ["Apple"] };
         break;
     }
 
@@ -366,6 +375,9 @@ export function Iteration3View({ scenario }: { scenario?: string | null } = {}) 
             }}
           />
         </div>
+        <div className="w-40">
+          <RevSelect label="Brand" options={[...BRANDS]} selected={filters.brand} onChange={(v) => set("brand", v as Brand[])} />
+        </div>
         <div className="w-44"><RevInput label="Seller ID" placeholder="Filter by seller ID…" value={filters.seller} onChange={(v) => set("seller", v)} /></div>
         <div className="w-36"><RevSelect label="State" options={["ACTIVE", "INACTIVE"]} selected={filters.state} onChange={(v) => set("state", v)} /></div>
         <div className="w-36"><RevSelect label="Status" options={[...STATUS_FILTER_OPTIONS]} selected={filters.status} onChange={(v) => set("status", v as Step3Filters["status"])} /></div>
@@ -421,7 +433,7 @@ export function Iteration3View({ scenario }: { scenario?: string | null } = {}) 
               />
               <SortHeader label="Start date" field="start_date" active={sort.field === "start_date"} dir={sort.dir} onSort={onSort} />
               <SortHeader label="End date" field="end_date" active={sort.field === "end_date"} dir={sort.dir} onSort={onSort} />
-              {["Market", "Category", "Product ID", "Grade", "Offer type", "Sellers", "Commission", "State"].map((h) => (
+              {["Market", "Category", "Product ID", "Grade", "Offer type", "Brand", "Sellers", "Commission", "State"].map((h) => (
                 <th key={h} className={COL_HEAD} style={{ color: "var(--rev-text-hi)" }}>{h}</th>
               ))}
               <th className={COL_HEAD} style={{ color: "var(--rev-text-hi)" }}>
@@ -479,6 +491,9 @@ export function Iteration3View({ scenario }: { scenario?: string | null } = {}) 
                       <span className="italic" style={{ color: "var(--rev-text-muted)" }}>All offer types</span>
                     )}
                   </td>
+                  <td className={CELL} style={{ color: "var(--rev-text-mid)" }}>
+                    {r.brand ?? <span className="italic" style={{ color: "var(--rev-text-muted)" }}>All brands</span>}
+                  </td>
                   <td className={CELL} style={{ color: "var(--rev-text-mid)" }}>{sellersLabel(r)}</td>
                   <td className={CELL}>
                     <span className="inline-flex items-center gap-1 font-semibold" style={{ color: outOfRange ? "var(--rev-warning)" : "var(--rev-text-hi)" }}>
@@ -501,7 +516,7 @@ export function Iteration3View({ scenario }: { scenario?: string | null } = {}) 
             })}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={15} className="px-3 py-10 text-center text-sm" style={{ color: "var(--rev-text-muted)" }}>
+                <td colSpan={16} className="px-3 py-10 text-center text-sm" style={{ color: "var(--rev-text-muted)" }}>
                   No rules match these filters.
                 </td>
               </tr>

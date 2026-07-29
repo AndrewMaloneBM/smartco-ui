@@ -7,7 +7,9 @@ import { ruleCategories } from "../iteration-1/logic";
  * adds the new lifecycle Status dimension (PRD: State is automatic from dates,
  * Status is the manual lifecycle field — ARCHIVED in this step). The two are
  * independent filters, so we keep our own filter type rather than reusing Step 1's.
- * Step 3 adds Grade (multiselect) and Offer type (single-select, per PRD).
+ * Step 3 adds Grade (multiselect), Offer type (single-select), and Brand
+ * (multiselect, per PRD update Jul 29 2026 — confirmed for inclusion, values
+ * still TBC from product).
  */
 export type Step3Filters = {
   market: string[]; // empty = all markets
@@ -19,6 +21,7 @@ export type Step3Filters = {
   status: ("ACTIVE" | RuleStatus)[];
   grade: Grade[]; // empty = all grades
   offerType: OfferTypeCode[]; // empty = all offer types; UI enforces at most one
+  brand: Brand[]; // empty = all brands
   search: string;
 };
 
@@ -37,6 +40,7 @@ export const DEFAULT_FILTERS: Step3Filters = {
   status: ["ACTIVE", "ARCHIVED"],
   grade: [],
   offerType: [],
+  brand: [],
   search: "",
 };
 
@@ -77,6 +81,8 @@ export function filterRules<T extends Step3Rule>(rules: T[], f: Step3Filters): T
       !(r.offer_type !== null && f.offerType.includes(r.offer_type))
     )
       return false;
+    if (f.brand.length && !(r.brand !== null && f.brand.includes(r.brand)))
+      return false;
     if (q && !`${r.id} ${r.name}`.toLowerCase().includes(q)) return false;
     return true;
   });
@@ -113,7 +119,18 @@ export function offerTypeLabel(code: OfferTypeCode): string {
   return OFFER_TYPES.find((o) => o.code === code)?.label ?? String(code);
 }
 
-/** Step 3 rule: Step 1/2's rule shape (Grade included) plus the new Offer type field. */
+/**
+ * Brand — PRD-confirmed for inclusion (Jul 29 2026, Loren), but no value list
+ * exists yet anywhere in the PRD or data model ("brand ? tbc"). PLACEHOLDER
+ * values below (spanning the existing device categories) — swap for the real
+ * list once product confirms it. Unlike Grade, Brand doesn't exist on Adri's
+ * `CommissionRule` at all, so it's a new field, same as Offer type.
+ */
+export type Brand = "Apple" | "Samsung" | "Google" | "Xiaomi" | "Sony" | "Other";
+export const BRANDS: Brand[] = ["Apple", "Samsung", "Google", "Xiaomi", "Sony", "Other"];
+
+/** Step 3 rule: Step 1/2's rule shape (Grade included) plus the new Offer type / Brand fields. */
 export type Step3Rule = Step1Rule & {
   offer_type: OfferTypeCode | null;
+  brand: Brand | null;
 };
