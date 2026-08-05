@@ -353,11 +353,11 @@ export function Iteration3View({ scenario }: { scenario?: string | null } = {}) 
 
       {/* Filter bar — floating-label fields directly on the page (BM Listings pattern). */}
       <div className="flex flex-wrap items-start gap-3">
-        <div className="w-40"><RevSelect label="Market" options={[...MARKETS]} selected={filters.market} onChange={(v) => set("market", v)} /></div>
-        <div className="w-44"><RevSelect label="Category" options={[...CATEGORIES]} selected={filters.category} onChange={(v) => set("category", v)} /></div>
+        <div className="w-40"><RevSelect label="Market" options={[...MARKETS]} selected={filters.market} onChange={(v) => set("market", v)} showChips /></div>
+        <div className="w-44"><RevSelect label="Category" options={[...CATEGORIES]} selected={filters.category} onChange={(v) => set("category", v)} showChips /></div>
         <div className="w-48"><RevInput label="Product ID" placeholder="Filter by product ID…" value={filters.product} onChange={(v) => set("product", v)} /></div>
         <div className="w-40">
-          <RevSelect label="Grade" options={[...GRADES]} selected={filters.grade} onChange={(v) => set("grade", v as Grade[])} />
+          <RevSelect label="Grade" options={[...GRADES]} selected={filters.grade} onChange={(v) => set("grade", v as Grade[])} showChips />
         </div>
         <div className="w-44">
           <RevSelect
@@ -365,18 +365,16 @@ export function Iteration3View({ scenario }: { scenario?: string | null } = {}) 
             options={OFFER_TYPES.map((o) => o.label)}
             selected={filters.offerType.map(offerTypeLabel)}
             onChange={(labels) => {
-              // PRD: Offer type is single-select. RevSelect is a shared multiselect
-              // primitive, so we keep only the most recently toggled label — picking a
-              // second option replaces the first, and unchecking clears to [].
               const codes = labels
                 .map((l) => OFFER_TYPES.find((o) => o.label === l)?.code)
                 .filter((c): c is OfferTypeCode => c !== undefined);
-              set("offerType", codes.slice(-1));
+              set("offerType", codes);
             }}
+            showChips
           />
         </div>
         <div className="w-40">
-          <RevSelect label="Brand" options={[...BRANDS]} selected={filters.brand} onChange={(v) => set("brand", v as Brand[])} />
+          <RevSelect label="Brand" options={[...BRANDS]} selected={filters.brand} onChange={(v) => set("brand", v as Brand[])} searchable showChips />
         </div>
         <div className="w-44"><RevInput label="Seller ID" placeholder="Filter by seller ID…" value={filters.seller} onChange={(v) => set("seller", v)} /></div>
         <div className="w-36"><RevSelect label="State" options={["ACTIVE", "INACTIVE"]} selected={filters.state} onChange={(v) => set("state", v)} /></div>
