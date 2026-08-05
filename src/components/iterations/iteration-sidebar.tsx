@@ -252,15 +252,6 @@ function IterationList({
           );
         })}
       </nav>
-
-      {/* Footer note */}
-      {!collapsed && (
-        <div className="border-t border-gray-100 px-4 py-3">
-          <p className="text-[11px] leading-relaxed text-gray-400">
-            <span className="font-medium text-gray-500">Original</span> is Adri&apos;s prototype — read-only.
-          </p>
-        </div>
-      )}
     </>
   );
 }
