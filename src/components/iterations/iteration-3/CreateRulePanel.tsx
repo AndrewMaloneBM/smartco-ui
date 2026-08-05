@@ -194,7 +194,7 @@ export interface CreateSeed {
   productRaw?: string;
   productBlurred?: boolean;
   grades?: string[];
-  offerType?: string;
+  offerTypes?: string[];
   brands?: string[];
   rate?: string;
   startDate?: string;
@@ -220,7 +220,7 @@ export function CreateRulePanel({
   const [productRaw, setProductRaw] = useState("");
   const [productBlurred, setProductBlurred] = useState(false);
   const [grades, setGrades] = useState<string[]>([]);
-  const [offerType, setOfferType] = useState(""); // "" = All offer types
+  const [offerTypes, setOfferTypes] = useState<string[]>([]);
   const [brands, setBrands] = useState<string[]>([]);
   const [rate, setRate] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -240,7 +240,7 @@ export function CreateRulePanel({
       setProductRaw(initial?.productRaw ?? "");
       setProductBlurred(initial?.productBlurred ?? false);
       setGrades(initial?.grades ?? []);
-      setOfferType(initial?.offerType ?? "");
+      setOfferTypes(initial?.offerTypes ?? []);
       setBrands(initial?.brands ?? []);
       setRate(initial?.rate ?? "");
       setStartDate(initial?.startDate ?? "");
@@ -273,7 +273,7 @@ export function CreateRulePanel({
     categories.length === 0 &&
     productIds.length === 0 &&
     grades.length === 0 &&
-    !offerType &&
+    offerTypes.length === 0 &&
     brands.length === 0 &&
     targeting === "ALL";
 
@@ -301,7 +301,7 @@ export function CreateRulePanel({
       categories,
       productIds,
       grades: grades as Grade[],
-      offerType: offerType ? (Number(offerType) as OfferTypeCode) : null,
+      offerTypes: offerTypes.map((label) => OFFER_TYPES.find((o) => o.label === label)!.code as OfferTypeCode),
       brands: brands as Brand[],
       commissionRate: Number(rateNum.toFixed(2)),
       startDate: startDate || null,
@@ -356,11 +356,11 @@ export function CreateRulePanel({
         </Field>
 
         <Field label="Market" optional hint="Empty = all markets in the marketplace.">
-          <RevSelect label="markets" hideLabel options={[...MARKETS]} selected={markets} onChange={setMarkets} />
+          <RevSelect label="markets" hideLabel options={[...MARKETS]} selected={markets} onChange={setMarkets} showChips />
         </Field>
 
         <Field label="Category" optional hint="Empty = all categories.">
-          <RevSelect label="categories" hideLabel options={[...CATEGORIES]} selected={categories} onChange={setCategories} />
+          <RevSelect label="categories" hideLabel options={[...CATEGORIES]} selected={categories} onChange={setCategories} showChips />
         </Field>
 
         <Field
@@ -396,27 +396,15 @@ export function CreateRulePanel({
         </Field>
 
         <Field label="Grade" optional hint="Empty = all grades.">
-          <RevSelect label="grades" hideLabel options={[...GRADES]} selected={grades} onChange={setGrades} />
+          <RevSelect label="grades" hideLabel options={[...GRADES]} selected={grades} onChange={setGrades} showChips />
         </Field>
 
         <Field label="Offer type" optional hint="Empty = all offer types.">
-          <select
-            value={offerType}
-            onChange={(e) => setOfferType(e.target.value)}
-            className="w-full px-3 py-2 text-sm"
-            style={inputStyle}
-          >
-            <option value="">All offer types</option>
-            {OFFER_TYPES.map((o) => (
-              <option key={o.code} value={o.code}>
-                {o.label}
-              </option>
-            ))}
-          </select>
+          <RevSelect label="offer types" hideLabel options={OFFER_TYPES.map((o) => o.label)} selected={offerTypes} onChange={setOfferTypes} showChips />
         </Field>
 
         <Field label="Brand" optional hint="Empty = all brands.">
-          <RevSelect label="brands" hideLabel options={[...BRANDS]} selected={brands} onChange={setBrands} />
+          <RevSelect label="brands" hideLabel options={[...BRANDS]} selected={brands} onChange={setBrands} searchable showChips />
         </Field>
 
         <Field label="Commission rate (%)" hint="Standard rate between 2-20%.">

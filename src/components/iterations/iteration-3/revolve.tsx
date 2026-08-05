@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef, useEffect, useRef, useState, type ReactNode } from "react";
+import { forwardRef, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { REV_RADIUS } from "../iteration-1/tokens";
 import type { Market } from "@/lib/types";
 import { MarketFlag } from "./flags";
@@ -334,6 +334,8 @@ export function RevSelect({
   selected,
   onChange,
   hideLabel,
+  searchable,
+  showChips,
 }: {
   label: string;
   options: string[];
@@ -341,8 +343,13 @@ export function RevSelect({
   onChange: (next: string[]) => void;
   /** Suppress the floating label (when an outer field already labels it). */
   hideLabel?: boolean;
+  /** Show a search input to filter long option lists. */
+  searchable?: boolean;
+  /** Render removable chips below the input for selected items. */
+  showChips?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -357,41 +364,106 @@ export function RevSelect({
   const toggle = (v: string) =>
     onChange(selected.includes(v) ? selected.filter((x) => x !== v) : [...selected, v]);
 
+  const remove = (v: string) => onChange(selected.filter((x) => x !== v));
+
+  const filtered = useMemo(() => {
+    if (!searchable || !query.trim()) return options;
+    const q = query.trim().toLowerCase();
+    return options.filter((o) => o.toLowerCase().includes(q));
+  }, [options, query, searchable]);
+
   const display =
     selected.length === 0
       ? `All ${label.toLowerCase()}`
-      : selected.length === 1
-      ? selected[0]
       : `${selected.length} selected`;
 
   return (
-    <div className="relative" ref={ref}>
-      <button type="button" onClick={() => setOpen((o) => !o)} className="w-full text-left">
-        <RevField label={hideLabel ? undefined : label}>
-          <span className="flex items-center justify-between gap-2">
-            <span className="truncate text-sm" style={{ color: selected.length ? "var(--rev-text-hi)" : "var(--rev-text-muted)" }}>
-              {display}
+    <div ref={ref}>
+      <div className="relative">
+        <button type="button" onClick={() => setOpen((o) => !o)} className="w-full text-left">
+          <RevField label={hideLabel ? undefined : label}>
+            <span className="flex items-center justify-between gap-2">
+              <span className="truncate text-sm" style={{ color: selected.length ? "var(--rev-text-hi)" : "var(--rev-text-muted)" }}>
+                {display}
+              </span>
+              <span className="flex items-center gap-2 shrink-0">
+      {showChips && selected.length > 0 && (
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => { e.stopPropagation(); onChange([]); }}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.stopPropagation(); onChange([]); } }}
+                    className="flex h-4 w-4 items-center justify-center cursor-pointer rounded-full hover:opacity-60"
+                    style={{ color: "var(--rev-text-low)" }}
+                    aria-label="Clear all"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <path d="M18 6L6 18M6 6l12 12" />
+                    </svg>
+                  </span>
+                )}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M6 9l6 6 6-6" stroke="var(--rev-text-low)" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              </span>
             </span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M6 9l6 6 6-6" stroke="var(--rev-text-low)" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </span>
-        </RevField>
-      </button>
-      {open && (
-        <div
-          className="absolute z-30 mt-1 max-h-60 w-full min-w-[180px] overflow-auto py-1"
-          style={{ background: "var(--rev-surface-low)", border: "1px solid var(--rev-border)", borderRadius: REV_RADIUS.md, boxShadow: "0px 4px 8px 0px rgba(0,0,0,0.08)" }}
-        >
-          {options.map((opt) => (
-            <label
-              key={opt}
-              className="flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm hover:opacity-80"
-              style={{ color: "var(--rev-text-hi)" }}
+          </RevField>
+        </button>
+        {open && (
+          <div
+            className="absolute z-30 mt-1 max-h-60 w-full min-w-[180px] overflow-auto py-1"
+            style={{ background: "var(--rev-surface-low)", border: "1px solid var(--rev-border)", borderRadius: REV_RADIUS.md, boxShadow: "0px 4px 8px 0px rgba(0,0,0,0.08)" }}
+          >
+            {searchable && (
+              <div className="px-3 py-1.5">
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search…"
+                  className="w-full px-2 py-1 text-sm"
+                  style={{ background: "var(--rev-surface-low)", border: "1px solid var(--rev-border)", borderRadius: REV_RADIUS.sm, color: "var(--rev-text-hi)" }}
+                  autoFocus
+                />
+              </div>
+            )}
+            {filtered.length === 0 && (
+              <span className="block px-3 py-1.5 text-sm" style={{ color: "var(--rev-text-muted)" }}>
+                No matches
+              </span>
+            )}
+            {filtered.map((opt) => (
+              <label
+                key={opt}
+                className="flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm hover:opacity-80"
+                style={{ color: "var(--rev-text-hi)" }}
+              >
+                <RevCheckbox checked={selected.includes(opt)} onChange={() => toggle(opt)} />
+                {opt}
+              </label>
+            ))}
+          </div>
+        )}
+      </div>
+      {showChips && selected.length > 0 && (
+        <div className="mt-1.5 flex flex-wrap gap-1.5">
+          {selected.map((v) => (
+            <span
+              key={v}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium"
+              style={{ borderRadius: REV_RADIUS.round, background: "var(--rev-primary-bg, hsl(270, 60%, 95%))", color: "var(--rev-text-hi)" }}
             >
-              <RevCheckbox checked={selected.includes(opt)} onChange={() => toggle(opt)} />
-              {opt}
-            </label>
+              {v}
+              <button
+                type="button"
+                onClick={() => remove(v)}
+                aria-label={`Remove ${v}`}
+                className="leading-none hover:opacity-60"
+                style={{ color: "var(--rev-text-mid)" }}
+              >
+                ×
+              </button>
+            </span>
           ))}
         </div>
       )}

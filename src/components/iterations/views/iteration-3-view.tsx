@@ -195,7 +195,7 @@ export function Iteration3View({ scenario }: { scenario?: string | null } = {}) 
         setCreateOpen(true);
         break;
       case "offer-type-create":
-        setCreateInitial({ campaignName: "Outlet clearance", offerType: "10" });
+        setCreateInitial({ campaignName: "Outlet clearance", offerTypes: ["Outlet"] });
         setCreateOpen(true);
         break;
       case "brand-create":
