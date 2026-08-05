@@ -27,7 +27,7 @@ export interface ScenarioDef {
 export type IterationStatus =
   | "live"
   | "in-development"
-  | "design-wip"
+  | "queued-for-dev"
   | "in-progress"
   | "ready-for-dev"
   | "awaiting-prd"
@@ -95,7 +95,7 @@ export const ITERATIONS: IterationDef[] = [
     title: "Grade × Battery Type",
     blurb: "Add Grade + Offer type + Brand targeting",
     badge: "3",
-    status: "design-wip",
+    status: "queued-for-dev",
     prdUrl:
       "https://backmarket.atlassian.net/wiki/spaces/sxp/pages/6505959304/sub-prd+Step+3+-+Granularity+upgrade+for+SmartCo",
     scenarios: STEP3_SCENARIOS,
@@ -126,7 +126,7 @@ export const DEFAULT_ITERATION = ITERATIONS[0].id;
 export const STATUS_LABEL: Record<IterationStatus, string> = {
   live: "Live",
   "in-development": "In development",
-  "design-wip": "Design WIP",
+  "queued-for-dev": "Queued for dev",
   "in-progress": "Work in progress",
   "ready-for-dev": "Ready for dev",
   "awaiting-prd": "Awaiting PRD",
@@ -136,7 +136,7 @@ export const STATUS_LABEL: Record<IterationStatus, string> = {
 export const STATUS_STYLES: Record<IterationStatus, string> = {
   live: "bg-emerald-100 text-emerald-700",
   "in-development": "bg-yellow-100 text-yellow-700",
-  "design-wip": "bg-violet-100 text-violet-700",
+  "queued-for-dev": "bg-blue-100 text-blue-700",
   "in-progress": "bg-violet-100 text-violet-700",
   "ready-for-dev": "bg-blue-100 text-blue-700",
   "awaiting-prd": "bg-amber-100 text-amber-700",
