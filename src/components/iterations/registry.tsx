@@ -62,8 +62,6 @@ export const ITERATIONS: IterationDef[] = [
     title: "Original",
     blurb: "Early concept inspiration",
     badge: "O",
-    prdUrl:
-      "https://backmarket.atlassian.net/wiki/spaces/sxp/pages/6504120985/prd+Smart+Commission+Management+interface+v1",
     Component: OriginalView,
   },
   {
