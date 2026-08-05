@@ -112,7 +112,7 @@ export function BulkUpdatePanel({
             Cancel
           </RevButton>
           <RevButton variant="primary" onClick={submit} disabled={!canSubmit}>
-            Update {count} rule{count === 1 ? "" : "s"}
+            Update rules
           </RevButton>
         </>
       }
@@ -188,7 +188,7 @@ export function ArchiveConfirm({
             Cancel
           </RevButton>
           <RevButton variant="primary" onClick={onConfirm}>
-            Archive {count} rule{count === 1 ? "" : "s"}
+            Archive rules
           </RevButton>
         </>
       }

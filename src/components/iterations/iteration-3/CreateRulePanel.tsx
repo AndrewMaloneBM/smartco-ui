@@ -6,7 +6,7 @@ import { RevSelect } from "./revolve";
 import { REV_RADIUS } from "../iteration-1/tokens";
 import { Drawer, RevButton } from "./Drawer";
 import { SELLER_POOL, isKnownProductId } from "./data";
-import { OFFER_TYPES, type OfferTypeCode } from "./logic";
+import { BRANDS, OFFER_TYPES, type Brand, type OfferTypeCode } from "./logic";
 import type { CreateInput } from "./engine";
 
 const RATE_MIN = 2;
@@ -194,7 +194,8 @@ export interface CreateSeed {
   productRaw?: string;
   productBlurred?: boolean;
   grades?: string[];
-  offerType?: string;
+  offerTypes?: string[];
+  brands?: string[];
   rate?: string;
   startDate?: string;
   endDate?: string;
@@ -219,7 +220,8 @@ export function CreateRulePanel({
   const [productRaw, setProductRaw] = useState("");
   const [productBlurred, setProductBlurred] = useState(false);
   const [grades, setGrades] = useState<string[]>([]);
-  const [offerType, setOfferType] = useState(""); // "" = All offer types
+  const [offerTypes, setOfferTypes] = useState<string[]>([]);
+  const [brands, setBrands] = useState<string[]>([]);
   const [rate, setRate] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -238,7 +240,8 @@ export function CreateRulePanel({
       setProductRaw(initial?.productRaw ?? "");
       setProductBlurred(initial?.productBlurred ?? false);
       setGrades(initial?.grades ?? []);
-      setOfferType(initial?.offerType ?? "");
+      setOfferTypes(initial?.offerTypes ?? []);
+      setBrands(initial?.brands ?? []);
       setRate(initial?.rate ?? "");
       setStartDate(initial?.startDate ?? "");
       setEndDate(initial?.endDate ?? "");
@@ -261,11 +264,17 @@ export function CreateRulePanel({
   const datesValid = !(startDate && endDate) || new Date(endDate) >= new Date(startDate);
   const startDateValid = !startDate || startDate >= todayDateValue();
 
-  // PRD: a rule can't be an all-markets/all-categories/all-products/all-sellers blanket.
+  // PRD: a rule can't be a totally unscoped blanket. Grade, Offer type, and Brand
+  // all count as valid narrowing too — a Grade-only (or Brand-only) rule (e.g. "all
+  // EXCELLENT-grade devices, any market") is exactly what Step 3 adds, so it can't
+  // require Market/Category/Product/Seller on top of that.
   const tooBroad =
     markets.length === 0 &&
     categories.length === 0 &&
     productIds.length === 0 &&
+    grades.length === 0 &&
+    offerTypes.length === 0 &&
+    brands.length === 0 &&
     targeting === "ALL";
 
   const errors: string[] = [];
@@ -273,7 +282,7 @@ export function CreateRulePanel({
   if (!rateValid) errors.push("Commission rate must be a number between 0 and 99.99%.");
   if (!startDateValid) errors.push("Start date can't be in the past.");
   if (!datesValid) errors.push("End date must be on or after the start date.");
-  if (tooBroad) errors.push("Narrow the scope — specify at least one market, category, product, or seller.");
+  if (tooBroad) errors.push("Narrow the scope — specify at least one market, category, product, grade, offer type, brand, or seller.");
   // A specific product already belongs to one category, so requiring both on
   // the same rule is contradictory.
   if (categories.length > 0 && productIds.length > 0)
@@ -292,7 +301,8 @@ export function CreateRulePanel({
       categories,
       productIds,
       grades: grades as Grade[],
-      offerType: offerType ? (Number(offerType) as OfferTypeCode) : null,
+      offerTypes: offerTypes.map((label) => OFFER_TYPES.find((o) => o.label === label)!.code as OfferTypeCode),
+      brands: brands as Brand[],
       commissionRate: Number(rateNum.toFixed(2)),
       startDate: startDate || null,
       endDate: endDate || null,
@@ -311,7 +321,12 @@ export function CreateRulePanel({
           <RevButton variant="secondary" onClick={onClose}>
             Cancel
           </RevButton>
-          <RevButton variant="primary" onClick={submit} disabled={!canSubmit}>
+          <RevButton
+            variant="primary"
+            onClick={submit}
+            aria-disabled={!canSubmit}
+            style={!canSubmit ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
+          >
             Create rules
           </RevButton>
         </>
@@ -341,11 +356,11 @@ export function CreateRulePanel({
         </Field>
 
         <Field label="Market" optional hint="Empty = all markets in the marketplace.">
-          <RevSelect label="markets" hideLabel options={[...MARKETS]} selected={markets} onChange={setMarkets} />
+          <RevSelect label="markets" hideLabel options={[...MARKETS]} selected={markets} onChange={setMarkets} showChips />
         </Field>
 
         <Field label="Category" optional hint="Empty = all categories.">
-          <RevSelect label="categories" hideLabel options={[...CATEGORIES]} selected={categories} onChange={setCategories} />
+          <RevSelect label="categories" hideLabel options={[...CATEGORIES]} selected={categories} onChange={setCategories} showChips />
         </Field>
 
         <Field
@@ -381,23 +396,15 @@ export function CreateRulePanel({
         </Field>
 
         <Field label="Grade" optional hint="Empty = all grades.">
-          <RevSelect label="grades" hideLabel options={[...GRADES]} selected={grades} onChange={setGrades} />
+          <RevSelect label="grades" hideLabel options={[...GRADES]} selected={grades} onChange={setGrades} showChips />
         </Field>
 
         <Field label="Offer type" optional hint="Empty = all offer types.">
-          <select
-            value={offerType}
-            onChange={(e) => setOfferType(e.target.value)}
-            className="w-full px-3 py-2 text-sm"
-            style={inputStyle}
-          >
-            <option value="">All offer types</option>
-            {OFFER_TYPES.map((o) => (
-              <option key={o.code} value={o.code}>
-                {o.label}
-              </option>
-            ))}
-          </select>
+          <RevSelect label="offer types" hideLabel options={OFFER_TYPES.map((o) => o.label)} selected={offerTypes} onChange={setOfferTypes} showChips />
+        </Field>
+
+        <Field label="Brand" optional hint="Empty = all brands.">
+          <RevSelect label="brands" hideLabel options={[...BRANDS]} selected={brands} onChange={setBrands} searchable showChips />
         </Field>
 
         <Field label="Commission rate (%)" hint="Standard rate between 2-20%.">

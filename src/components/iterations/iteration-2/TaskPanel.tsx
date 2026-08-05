@@ -120,6 +120,24 @@ function ResultRow({ item }: { item: TaskItem }) {
   );
 }
 
+/**
+ * A labelled stat in the task detail header (Status/Duration/Rules/Submitted by).
+ * Same floating-label typography as RevField — small muted caption over a bold
+ * high-contrast value — so label and value are clearly distinct at a glance.
+ */
+function MetaField({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="text-[11px] leading-none" style={{ color: "var(--rev-text-low)" }}>
+        {label}
+      </span>
+      <span className="text-sm font-semibold" style={{ color: "var(--rev-text-hi)" }}>
+        {children}
+      </span>
+    </div>
+  );
+}
+
 function TaskDetail({ task }: { task: Task }) {
   if (task.status === "ONGOING") {
     return (
@@ -290,27 +308,11 @@ export function TaskPanel({
 
       {selected && (
         <div className="flex flex-col gap-4">
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs" style={{ color: "var(--rev-text-low)" }}>
-            <span>
-              <strong className="font-semibold">Status</strong>{" "}
-              <span style={{ color: "var(--rev-text-hi)" }}>
-                {selected.status === "ONGOING" ? "Ongoing" : "Done"}
-              </span>
-            </span>
-            <span>
-              <strong className="font-semibold">Duration</strong>{" "}
-              <span style={{ color: "var(--rev-text-hi)" }}>
-                {selected.status === "DONE" ? fmtDuration(selected.durationMs) : "—"}
-              </span>
-            </span>
-            <span>
-              <strong className="font-semibold">Rules</strong>{" "}
-              <span style={{ color: "var(--rev-text-hi)" }}>{selected.items.length}</span>
-            </span>
-            <span>
-              <strong className="font-semibold">Submitted by</strong>{" "}
-              <span style={{ color: "var(--rev-text-hi)" }}>{selected.author}</span>
-            </span>
+          <div className="flex flex-wrap gap-x-6 gap-y-3">
+            <MetaField label="Status">{selected.status === "ONGOING" ? "Ongoing" : "Done"}</MetaField>
+            <MetaField label="Duration">{selected.status === "DONE" ? fmtDuration(selected.durationMs) : "—"}</MetaField>
+            <MetaField label="Rules">{selected.items.length}</MetaField>
+            <MetaField label="Submitted by">{selected.author}</MetaField>
           </div>
           <TaskDetail task={selected} />
         </div>

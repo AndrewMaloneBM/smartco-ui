@@ -93,7 +93,7 @@ export const ITERATIONS: IterationDef[] = [
     id: "step-3",
     step: "Step #3",
     title: "Grade × Battery Type",
-    blurb: "Add Grade + Offer type targeting",
+    blurb: "Add Grade + Offer type + Brand targeting",
     badge: "3",
     status: "design-wip",
     prdUrl:
