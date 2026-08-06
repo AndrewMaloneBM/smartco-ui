@@ -18,10 +18,8 @@ export const STEP3_SCENARIOS: { id: string; label: string; group: string }[] = [
 ];
 
 /**
- * A large task history so the Tasks drawer demonstrates pagination. 126 tasks
- * at 3 per page = 42 pages, mirroring the reference pager mockup (1 [2] [3] …
- * 42). Spread across kinds and statuses so the Ongoing / Completed / Errored
- * tabs stay meaningful too.
+ * A task history so the Tasks drawer demonstrates pagination. 15 tasks at
+ * 3 per page = 5 pages.
  */
 export function makePaginationTasks(now: string): Task[] {
   const tasks: Task[] = [];
@@ -36,7 +34,7 @@ export function makePaginationTasks(now: string): Task[] {
       message: "Created successfully.",
     }));
 
-  for (let i = 1; i <= 126; i++) {
+  for (let i = 1; i <= 15; i++) {
     const id = `TASK-${String(i).padStart(4, "0")}`;
     const kind = kinds[i % 3];
     const ongoing = i % 17 === 0;
