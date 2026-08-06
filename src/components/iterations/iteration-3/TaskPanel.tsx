@@ -249,6 +249,11 @@ export function TaskPanel({
           : "Asynchronous create / update / archive submissions."
       }
       width={520}
+      footer={
+        !selected && tasks.length > 0 && taskTotalPages > 1 ? (
+          <RevPagination page={taskPage} total={taskTotalPages} onChange={setTaskPage} />
+        ) : undefined
+      }
     >
       {selected && (
         <RevLink onClick={() => setSelectedId(null)} className="mb-4">
@@ -317,10 +322,6 @@ export function TaskPanel({
             </button>
           ))}
           </div>
-
-          {taskTotalPages > 1 && (
-            <RevPagination page={taskPage} total={taskTotalPages} onChange={setTaskPage} />
-          )}
         </div>
       )}
 
