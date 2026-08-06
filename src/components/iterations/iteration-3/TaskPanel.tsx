@@ -251,7 +251,9 @@ export function TaskPanel({
       width={520}
       footer={
         !selected && tasks.length > 0 && taskTotalPages > 1 ? (
-          <RevPagination page={taskPage} total={taskTotalPages} onChange={setTaskPage} />
+          <div className="flex w-full justify-center">
+            <RevPagination page={taskPage} total={taskTotalPages} onChange={setTaskPage} />
+          </div>
         ) : undefined
       }
     >
@@ -268,7 +270,7 @@ export function TaskPanel({
       )}
 
       {!selected && tasks.length > 0 && (
-        <div className="flex flex-col gap-3">
+        <div className="flex h-full flex-col gap-3">
           {/* Outcome tabs — underline (RevTabs). Counts sum to All (each task buckets once). */}
           <RevTabs
             value={tab}
@@ -280,7 +282,7 @@ export function TaskPanel({
             }))}
           />
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-1 flex-col gap-2">
           {pageTasks.length === 0 && (
             <p className="py-8 text-center text-sm" style={{ color: "var(--rev-text-muted)" }}>
               No {TAB_LABEL[tab].toLowerCase()} tasks.
