@@ -363,6 +363,10 @@ export function CreateRulePanel({
           <RevSelect label="categories" hideLabel options={[...CATEGORIES]} selected={categories} onChange={setCategories} showChips />
         </Field>
 
+        <Field label="Brand" optional hint="Empty = all brands.">
+          <RevSelect label="brands" hideLabel options={[...BRANDS]} selected={brands} onChange={setBrands} searchable showChips />
+        </Field>
+
         <Field
           label="Product ID"
           optional
@@ -401,10 +405,6 @@ export function CreateRulePanel({
 
         <Field label="Offer type" optional hint="Empty = all offer types.">
           <RevSelect label="offer types" hideLabel options={OFFER_TYPES.map((o) => o.label)} selected={offerTypes} onChange={setOfferTypes} showChips />
-        </Field>
-
-        <Field label="Brand" optional hint="Empty = all brands.">
-          <RevSelect label="brands" hideLabel options={[...BRANDS]} selected={brands} onChange={setBrands} searchable showChips />
         </Field>
 
         <Field label="Commission rate (%)" hint="Standard rate between 2-20%.">
