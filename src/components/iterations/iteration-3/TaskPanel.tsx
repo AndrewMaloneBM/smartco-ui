@@ -8,7 +8,7 @@ import { Drawer } from "./Drawer";
 import { RevLink, RevTabs, RevTag } from "./revolve";
 import { RESULT_META, type RuleResult, type Task, type TaskItem } from "./engine";
 
-const TASK_PAGE_SIZE = 3;
+const TASK_PAGE_SIZE = 8;
 
 const TONE: Record<"success" | "warning" | "danger", { bg: string; fg: string }> = {
   success: { bg: "var(--rev-success-bg)", fg: "var(--rev-success)" },
