@@ -3,9 +3,12 @@
 import { useEffect, useState } from "react";
 import { formatDate } from "@/lib/utils";
 import { REV_RADIUS } from "../iteration-1/tokens";
+import { RevPagination } from "../iteration-1/RevPagination";
 import { Drawer } from "./Drawer";
 import { RevLink, RevTabs, RevTag } from "./revolve";
 import { RESULT_META, type RuleResult, type Task, type TaskItem } from "./engine";
+
+const TASK_PAGE_SIZE = 3;
 
 const TONE: Record<"success" | "warning" | "danger", { bg: string; fg: string }> = {
   success: { bg: "var(--rev-success-bg)", fg: "var(--rev-success)" },
@@ -210,6 +213,7 @@ export function TaskPanel({
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [tab, setTab] = useState<TaskTab>("ALL");
+  const [taskPage, setTaskPage] = useState(1);
 
   // Open to the all-tasks list by default, or deep-link to a task when asked.
   // Clearing selection + tab on close means a fresh open starts at the list.
@@ -217,12 +221,22 @@ export function TaskPanel({
     if (!open) {
       setSelectedId(null);
       setTab("ALL");
+      setTaskPage(1);
     } else if (initialTaskId) {
       setSelectedId(initialTaskId);
     }
   }, [open, initialTaskId]);
 
   const selected = tasks.find((t) => t.id === selectedId) ?? null;
+
+  const tabbedTasks = tab === "ALL" ? tasks : tasks.filter((t) => taskCategory(t) === tab);
+  const taskTotalPages = Math.max(1, Math.ceil(tabbedTasks.length / TASK_PAGE_SIZE));
+  const pageTasks = tabbedTasks.slice((taskPage - 1) * TASK_PAGE_SIZE, taskPage * TASK_PAGE_SIZE);
+
+  const onTabChange = (v: string) => {
+    setTab(v as TaskTab);
+    setTaskPage(1);
+  };
 
   return (
     <Drawer
@@ -253,7 +267,7 @@ export function TaskPanel({
           {/* Outcome tabs — underline (RevTabs). Counts sum to All (each task buckets once). */}
           <RevTabs
             value={tab}
-            onChange={(v) => setTab(v as TaskTab)}
+            onChange={onTabChange}
             tabs={(["ALL", "ONGOING", "COMPLETED", "ERRORED"] as TaskTab[]).map((tb) => ({
               value: tb,
               label: TAB_LABEL[tb],
@@ -262,12 +276,12 @@ export function TaskPanel({
           />
 
           <div className="flex flex-col gap-2">
-          {(tab === "ALL" ? tasks : tasks.filter((t) => taskCategory(t) === tab)).length === 0 && (
+          {pageTasks.length === 0 && (
             <p className="py-8 text-center text-sm" style={{ color: "var(--rev-text-muted)" }}>
               No {TAB_LABEL[tab].toLowerCase()} tasks.
             </p>
           )}
-          {(tab === "ALL" ? tasks : tasks.filter((t) => taskCategory(t) === tab)).map((t) => (
+          {pageTasks.map((t) => (
             <button
               key={t.id}
               type="button"
@@ -303,6 +317,10 @@ export function TaskPanel({
             </button>
           ))}
           </div>
+
+          {taskTotalPages > 1 && (
+            <RevPagination page={taskPage} total={taskTotalPages} onChange={setTaskPage} />
+          )}
         </div>
       )}
 

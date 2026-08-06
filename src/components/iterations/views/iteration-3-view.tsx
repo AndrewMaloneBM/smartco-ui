@@ -48,6 +48,7 @@ import {
 import { CreateRulePanel, type CreateSeed } from "../iteration-3/CreateRulePanel";
 import { ArchiveConfirm, BulkUpdatePanel } from "../iteration-3/BulkUpdatePanel";
 import { TaskPanel } from "../iteration-3/TaskPanel";
+import { makePaginationTasks } from "../iteration-3/scenarios";
 import { DRAWER_TRANSITION_MS, RevButton } from "../iteration-3/Drawer";
 import { RevCheckbox, RevInput, RevLink, RevPill, RevSelect, RevSpinner, RevTag, type RevTagVariant } from "../iteration-3/revolve";
 
@@ -185,7 +186,7 @@ export function Iteration3View({ scenario }: { scenario?: string | null } = {}) 
     setFocusTaskId(null);
 
     const rulesNext = seedRules();
-    const tasksNext: Task[] = [];
+    let tasksNext: Task[] = [];
     let filtersNext: Step3Filters = DEFAULT_FILTERS;
     const selectedNext = new Set<string>();
 
@@ -210,6 +211,10 @@ export function Iteration3View({ scenario }: { scenario?: string | null } = {}) 
         break;
       case "brand-filter":
         filtersNext = { ...DEFAULT_FILTERS, brand: ["Apple"] };
+        break;
+      case "tasks-pagination":
+        tasksNext = makePaginationTasks(new Date().toISOString());
+        setTasksOpen(true);
         break;
     }
 
