@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { formatDate } from "@/lib/utils";
 import { REV_RADIUS } from "../iteration-1/tokens";
 import { RevPagination } from "../iteration-1/RevPagination";
@@ -214,6 +214,7 @@ export function TaskPanel({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [tab, setTab] = useState<TaskTab>("ALL");
   const [taskPage, setTaskPage] = useState(1);
+  const listRef = useRef<HTMLDivElement>(null);
 
   // Open to the all-tasks list by default, or deep-link to a task when asked.
   // Clearing selection + tab on close means a fresh open starts at the list.
@@ -237,6 +238,12 @@ export function TaskPanel({
     setTab(v as TaskTab);
     setTaskPage(1);
   };
+
+  // When the page (or tab) changes, the newly rendered task slice should start
+  // from the top — don't inherit the previous page's scroll offset.
+  useEffect(() => {
+    if (listRef.current) listRef.current.scrollTop = 0;
+  }, [taskPage, tab]);
 
   return (
     <Drawer
@@ -282,7 +289,7 @@ export function TaskPanel({
             }))}
           />
 
-          <div className="flex flex-1 flex-col gap-2">
+          <div ref={listRef} className="flex flex-1 flex-col gap-2 overflow-y-auto">
           {pageTasks.length === 0 && (
             <p className="py-8 text-center text-sm" style={{ color: "var(--rev-text-muted)" }}>
               No {TAB_LABEL[tab].toLowerCase()} tasks.
