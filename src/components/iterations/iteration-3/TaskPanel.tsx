@@ -256,13 +256,6 @@ export function TaskPanel({
           : "Asynchronous create / update / archive submissions."
       }
       width={520}
-      footer={
-        !selected && tasks.length > 0 && taskTotalPages > 1 ? (
-          <div className="flex w-full justify-center">
-            <RevPagination page={taskPage} total={taskTotalPages} onChange={setTaskPage} />
-          </div>
-        ) : undefined
-      }
     >
       {selected && (
         <RevLink onClick={() => setSelectedId(null)} className="mb-4">
@@ -330,6 +323,12 @@ export function TaskPanel({
               </span>
             </button>
           ))}
+
+          {taskTotalPages > 1 && (
+            <div className="flex justify-center py-3">
+              <RevPagination page={taskPage} total={taskTotalPages} onChange={setTaskPage} />
+            </div>
+          )}
           </div>
         </div>
       )}
