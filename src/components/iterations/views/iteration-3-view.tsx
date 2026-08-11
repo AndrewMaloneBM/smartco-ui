@@ -41,7 +41,6 @@ import {
   buildCreateTask,
   buildUpdateTask,
   commitTask,
-  markTaskFailed,
   type BulkUpdateValues,
   type CreateInput,
   type Task,
@@ -217,36 +216,6 @@ export function Iteration3View({ scenario }: { scenario?: string | null } = {}) 
         tasksNext = makePaginationTasks(new Date().toISOString());
         setTasksOpen(true);
         break;
-      case "task-failed": {
-        // A CREATE task that broke in the backend pipe: nothing committed, no
-        // per-rule detail, just a failure message. Retry re-runs the same task.
-        const now = new Date().toISOString();
-        const created = buildCreateTask(
-          {
-            campaignName: "Apple devices push",
-            sellerTargeting: "ALL",
-            sellerIds: [],
-            markets: ["FR", "DE"],
-            categories: ["Smartphones"],
-            productIds: [],
-            grades: [],
-            offerTypes: [],
-            brands: ["Apple"],
-            commissionRate: 12,
-            startDate: null,
-            endDate: null,
-            author: AUTHOR,
-          },
-          rulesNext,
-          now
-        );
-        tasksNext = [
-          markTaskFailed(created, "Rule creation failed in the commission service."),
-        ];
-        setTasksOpen(true);
-        setFocusTaskId(created.id);
-        break;
-      }
     }
 
     setRules(rulesNext);
@@ -308,26 +277,6 @@ export function Iteration3View({ scenario }: { scenario?: string | null } = {}) 
     const t = setTimeout(() => {
       setRules((prev) => commitTask(task, prev, new Date().toISOString()));
       setTasks((prev) => prev.map((x) => (x.id === task.id ? { ...x, status: "DONE" } : x)));
-    }, task.durationMs);
-    timers.current.push(t);
-  };
-
-  // Retry a FAILED task: flip it back to ONGOING and re-run the same payload.
-  // commitTask uses the original pendingRules/update/archiveIds, which the
-  // failed task still carries, so a retry commits exactly what failed to.
-  const retryTask = (task: Task) => {
-    setTasks((prev) =>
-      prev.map((x) =>
-        x.id === task.id
-          ? { ...x, status: "ONGOING", submittedAt: new Date().toISOString(), failureMessage: undefined }
-          : x
-      )
-    );
-    const t = setTimeout(() => {
-      setRules((prev) => commitTask(task, prev, new Date().toISOString()));
-      setTasks((prev) =>
-        prev.map((x) => (x.id === task.id ? { ...x, status: "DONE" } : x))
-      );
     }, task.durationMs);
     timers.current.push(t);
   };
@@ -588,7 +537,7 @@ export function Iteration3View({ scenario }: { scenario?: string | null } = {}) 
       <CreateRulePanel open={createOpen} onClose={() => setCreateOpen(false)} onSubmit={onCreate} initial={createInitial} />
       <BulkUpdatePanel open={updateOpen} count={selectedCount} onClose={() => setUpdateOpen(false)} onSubmit={onBulkUpdate} />
       <ArchiveConfirm open={archiveOpen} count={selectedCount} onClose={() => setArchiveOpen(false)} onConfirm={onArchive} />
-      <TaskPanel open={tasksOpen} tasks={tasks} onClose={() => setTasksOpen(false)} initialTaskId={focusTaskId} onRetry={retryTask} />
+      <TaskPanel open={tasksOpen} tasks={tasks} onClose={() => setTasksOpen(false)} initialTaskId={focusTaskId} />
     </div>
   );
 }

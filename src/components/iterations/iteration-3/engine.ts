@@ -15,7 +15,7 @@ import type { Brand, OfferTypeCode, Step3Rule } from "./logic";
 export type RuleResult = "CREATED" | "OVERLAP" | "STRICT_CONFLICT" | "SYSTEM_ERROR";
 
 export type TaskKind = "CREATE" | "UPDATE" | "ARCHIVE";
-export type TaskStatus = "ONGOING" | "DONE" | "FAILED";
+export type TaskStatus = "ONGOING" | "DONE";
 
 export interface TaskItem {
   /** Rule id this line refers to (the new rule's id for CREATE, existing id otherwise). */
@@ -49,9 +49,6 @@ export interface Task {
   author: string;
   durationMs: number; // simulated processing time
   status: TaskStatus;
-  /** Whole-task failure message. Set when status === FAILED — the backend pipe
-   *  broke and nothing was committed; there is no per-rule detail to show. */
-  failureMessage?: string;
   /** New rules to commit once a CREATE task resolves (excludes strict conflicts). */
   pendingRules: Step3Rule[];
   /** Rule ids + new values to apply once a bulk UPDATE task resolves. */
@@ -392,13 +389,6 @@ export function buildArchiveTask(
     archiveIds: ruleIds,
     items,
   };
-}
-
-/** Flip a freshly built task into a whole-task failure: the submission broke
- *  in the backend pipe, nothing was committed, and there's no per-rule detail
- *  beyond a plain failure message. Retry just re-runs the original task. */
-export function markTaskFailed(task: Task, failureMessage: string): Task {
-  return { ...task, status: "FAILED", failureMessage };
 }
 
 /** Apply a resolved task's effects to the rule store, returning the new array. */
