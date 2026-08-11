@@ -409,11 +409,11 @@ export function Iteration3View({ scenario }: { scenario?: string | null } = {}) 
 
       {/* Filter bar — floating-label fields directly on the page (BM Listings pattern). */}
       <div className="flex flex-wrap items-start gap-3">
-        <div className="w-40"><RevSelect label="Market" options={[...MARKETS]} selected={filters.market} onChange={(v) => set("market", v)} /></div>
-        <div className="w-44"><RevSelect label="Category" options={[...CATEGORIES]} selected={filters.category} onChange={(v) => set("category", v)} /></div>
+        <div className="w-40"><RevSelect label="Market" options={[...MARKETS].sort()} selected={filters.market} onChange={(v) => set("market", v)} /></div>
+        <div className="w-44"><RevSelect label="Category" options={[...CATEGORIES].sort()} selected={filters.category} onChange={(v) => set("category", v)} /></div>
         <div className="w-48"><RevInput label="Product ID" placeholder="Filter by product ID…" value={filters.product} onChange={(v) => set("product", v)} /></div>
         <div className="w-40">
-          <RevSelect label="Grade" options={[...GRADES]} selected={filters.grade} onChange={(v) => set("grade", v as Grade[])} />
+          <RevSelect label="Grade" options={[...GRADES].sort()} selected={filters.grade} onChange={(v) => set("grade", v as Grade[])} />
         </div>
         <div className="w-44">
           <RevSelect
@@ -429,7 +429,7 @@ export function Iteration3View({ scenario }: { scenario?: string | null } = {}) 
           />
         </div>
         <div className="w-40">
-          <RevSelect label="Brand" options={[...BRANDS]} selected={filters.brand} onChange={(v) => set("brand", v as Brand[])} searchable />
+          <RevSelect label="Brand" options={[...BRANDS].sort()} selected={filters.brand} onChange={(v) => set("brand", v as Brand[])} />
         </div>
         <div className="w-44"><RevInput label="Seller ID" placeholder="Filter by seller ID…" value={filters.seller} onChange={(v) => set("seller", v)} /></div>
         <div className="w-36"><RevSelect label="State" options={["ACTIVE", "INACTIVE"]} selected={filters.state} onChange={(v) => set("state", v)} /></div>
