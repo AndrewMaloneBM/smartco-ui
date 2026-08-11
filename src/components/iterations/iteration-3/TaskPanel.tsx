@@ -5,6 +5,7 @@ import { formatDate } from "@/lib/utils";
 import { REV_RADIUS } from "../iteration-1/tokens";
 import { RevPagination } from "../iteration-1/RevPagination";
 import { Drawer } from "./Drawer";
+import { RevButton } from "./Drawer";
 import { RevLink, RevTabs, RevTag } from "./revolve";
 import { RESULT_META, type RuleResult, type Task, type TaskItem } from "./engine";
 
@@ -30,13 +31,22 @@ function fmtDuration(ms: number): string {
 
 function StatusPill({ status }: { status: Task["status"] }) {
   const ongoing = status === "ONGOING";
+  const failed = status === "FAILED";
   return (
     <span
       className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-semibold"
       style={{
         borderRadius: REV_RADIUS.xs,
-        background: ongoing ? "var(--rev-warning-bg)" : "var(--rev-success-bg)",
-        color: ongoing ? "var(--rev-warning)" : "var(--rev-success)",
+        background: failed
+          ? "var(--rev-danger-bg)"
+          : ongoing
+            ? "var(--rev-warning-bg)"
+            : "var(--rev-success-bg)",
+        color: failed
+          ? "var(--rev-danger)"
+          : ongoing
+            ? "var(--rev-warning)"
+            : "var(--rev-success)",
       }}
     >
       {ongoing ? (
@@ -47,7 +57,7 @@ function StatusPill({ status }: { status: Task["status"] }) {
       ) : (
         <span className="h-1.5 w-1.5 rounded-full" style={{ background: "currentColor" }} />
       )}
-      {ongoing ? "Ongoing" : "Done"}
+      {ongoing ? "Ongoing" : failed ? "Failed" : "Done"}
     </span>
   );
 }
@@ -64,9 +74,11 @@ const KIND_LABEL: Record<Task["kind"], string> = {
 type TaskTab = "ALL" | "ONGOING" | "COMPLETED" | "ERRORED";
 type TaskCategory = "ONGOING" | "COMPLETED" | "ERRORED";
 
-/** Bucket a task by status: in-progress → Ongoing; any rejected/error → Errored; else Completed. */
+/** Bucket a task by status: in-progress → Ongoing; failed or any
+ *  rejected/error → Errored; else Completed. */
 function taskCategory(t: Task): TaskCategory {
   if (t.status === "ONGOING") return "ONGOING";
+  if (t.status === "FAILED") return "ERRORED";
   if (t.kind === "CREATE") {
     const has = (r: RuleResult) => t.items.some((i) => i.result === r);
     if (has("STRICT_CONFLICT") || has("SYSTEM_ERROR")) return "ERRORED";
@@ -141,7 +153,14 @@ function MetaField({ label, children }: { label: string; children: React.ReactNo
   );
 }
 
-function TaskDetail({ task }: { task: Task }) {
+/** What a failed task's banner says was not applied, per task kind. */
+const FAILED_EFFECT: Record<Task["kind"], string> = {
+  CREATE: "No rules were created.",
+  UPDATE: "No rules were updated.",
+  ARCHIVE: "No rules were archived.",
+};
+
+function TaskDetail({ task, onRetry }: { task: Task; onRetry?: (t: Task) => void }) {
   if (task.status === "ONGOING") {
     return (
       <div className="flex flex-col items-center gap-3 py-10 text-sm" style={{ color: "var(--rev-text-low)" }}>
@@ -150,6 +169,38 @@ function TaskDetail({ task }: { task: Task }) {
           style={{ border: "3px solid var(--rev-static-hi)", borderTopColor: "var(--rev-text-hi)" }}
         />
         Processing {task.items.length} rule{task.items.length === 1 ? "" : "s"}…
+      </div>
+    );
+  }
+
+  // Whole-task failure: nothing was committed and there's no per-rule breakdown,
+  // just the backend's plain message (Roberto, Aug 11 2026) plus a retry.
+  if (task.status === "FAILED") {
+    return (
+      <div
+        className="flex flex-col items-start gap-2.5 px-4 py-5"
+        style={{
+          background: "var(--rev-danger-bg)",
+          border: "1px solid var(--rev-danger)",
+          borderRadius: REV_RADIUS.sm,
+        }}
+      >
+        <span className="flex items-center gap-2 text-sm font-semibold" style={{ color: "var(--rev-danger)" }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+            <path d="M12 9v4M12 17h.01" />
+          </svg>
+          Something went wrong
+        </span>
+        <p className="text-sm" style={{ color: "var(--rev-text-hi)" }}>
+          {task.failureMessage}
+        </p>
+        <p className="text-xs" style={{ color: "var(--rev-text-low)" }}>
+          {FAILED_EFFECT[task.kind]}
+        </p>
+        <RevButton variant="primary" className="mt-1" onClick={() => onRetry?.(task)}>
+          Retry
+        </RevButton>
       </div>
     );
   }
@@ -204,12 +255,15 @@ export function TaskPanel({
   tasks,
   onClose,
   initialTaskId,
+  onRetry,
 }: {
   open: boolean;
   tasks: Task[];
   onClose: () => void;
   /** Deep-link straight to a task's detail on open (used by dev scenarios). */
   initialTaskId?: string | null;
+  /** Re-submit a FAILED task (whole-task failure, Roberto Aug 11 2026). */
+  onRetry?: (task: Task) => void;
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [tab, setTab] = useState<TaskTab>("ALL");
@@ -307,7 +361,7 @@ export function TaskPanel({
                 <span>·</span>
                 <span>{t.items.length} rule{t.items.length === 1 ? "" : "s"}</span>
                 <span>·</span>
-                <span>{t.status === "DONE" ? fmtDuration(t.durationMs) : "—"}</span>
+                <span>{t.status !== "ONGOING" ? fmtDuration(t.durationMs) : "—"}</span>
               </div>
               {t.status === "DONE" && (
                 <div className="flex flex-wrap items-center gap-1.5">
@@ -336,12 +390,22 @@ export function TaskPanel({
       {selected && (
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap gap-x-6 gap-y-3">
-            <MetaField label="Status">{selected.status === "ONGOING" ? "Ongoing" : "Done"}</MetaField>
-            <MetaField label="Duration">{selected.status === "DONE" ? fmtDuration(selected.durationMs) : "—"}</MetaField>
+            <MetaField label="Status">
+              {selected.status === "ONGOING" ? (
+                "Ongoing"
+              ) : selected.status === "FAILED" ? (
+                <span style={{ color: "var(--rev-danger)" }}>Failed</span>
+              ) : (
+                "Done"
+              )}
+            </MetaField>
+            <MetaField label="Duration">
+              {selected.status !== "ONGOING" ? fmtDuration(selected.durationMs) : "—"}
+            </MetaField>
             <MetaField label="Rules">{selected.items.length}</MetaField>
             <MetaField label="Submitted by">{selected.author}</MetaField>
           </div>
-          <TaskDetail task={selected} />
+          <TaskDetail task={selected} onRetry={onRetry} />
         </div>
       )}
     </Drawer>

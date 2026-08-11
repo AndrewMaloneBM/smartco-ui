@@ -15,6 +15,7 @@ export const STEP3_SCENARIOS: { id: string; label: string; group: string }[] = [
   { id: "offer-type-filter", label: "Offer type filter", group: "Filters" },
   { id: "brand-filter", label: "Brand filter", group: "Filters" },
   { id: "tasks-pagination", label: "Tasks pagination", group: "Task results" },
+  { id: "task-failed", label: "Task failed", group: "Task results" },
 ];
 
 /**
