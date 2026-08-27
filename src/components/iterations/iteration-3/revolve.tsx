@@ -222,6 +222,29 @@ export const RevCheckbox = forwardRef<
 });
 
 /**
+ * RevRadio — native radio input tinted to the app's primary action color,
+ * matching RevCheckbox's sizing and color. Per RevRadio.md: use for
+ * single-choice selection from 2-7 options; all radios sharing a `name`
+ * are mutually exclusive.
+ */
+export const RevRadio = forwardRef<
+  HTMLInputElement,
+  { checked: boolean; onChange: () => void } & React.InputHTMLAttributes<HTMLInputElement>
+>(function RevRadio({ checked, onChange, ...props }, ref) {
+  return (
+    <input
+      ref={ref}
+      type="radio"
+      checked={checked}
+      onChange={onChange}
+      {...props}
+      className={`h-4 w-4 cursor-pointer ${props.className ?? ""}`}
+      style={{ accentColor: "var(--rev-primary)", ...props.style }}
+    />
+  );
+});
+
+/**
  * RevIconButton — icon-only action (Revolve's "Button Icon"). Ghost/low tone by
  * default: transparent background, low-contrast icon, fades in on hover.
  */
@@ -457,7 +480,7 @@ export function RevSelect({
             <span
               key={v}
               className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium"
-              style={{ borderRadius: REV_RADIUS.round, background: "var(--rev-primary-bg, hsl(270, 60%, 95%))", color: "var(--rev-text-hi)" }}
+              style={{ borderRadius: REV_RADIUS.round, background: "var(--rev-primary-bg, hsl(270, 60%, 95%))", color: "var(--rev-text-hi)", border: "1px solid var(--rev-border-strong)" }}
             >
               {v}
               <button
