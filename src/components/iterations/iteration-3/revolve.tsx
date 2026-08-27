@@ -336,6 +336,8 @@ export function RevSelect({
   hideLabel,
   searchable,
   showChips,
+  placeholder,
+  ariaLabel,
 }: {
   label: string;
   options: string[];
@@ -347,6 +349,10 @@ export function RevSelect({
   searchable?: boolean;
   /** Render removable chips below the input for selected items. */
   showChips?: boolean;
+  /** Override the empty-state display (defaults to "All {label}"). */
+  placeholder?: string;
+  /** Accessible name for the trigger button (defaults to `label` when hideLabel). */
+  ariaLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -374,13 +380,13 @@ export function RevSelect({
 
   const display =
     selected.length === 0
-      ? `All ${label.toLowerCase()}`
+      ? (placeholder ?? `All ${label.toLowerCase()}`)
       : `${selected.length} selected`;
 
   return (
     <div ref={ref}>
       <div className="relative">
-        <button type="button" onClick={() => setOpen((o) => !o)} className="w-full text-left">
+        <button type="button" onClick={() => setOpen((o) => !o)} className="w-full text-left" aria-label={ariaLabel ?? (hideLabel ? label : undefined)}>
           <RevField label={hideLabel ? undefined : label}>
             <span className="flex items-center justify-between gap-2">
               <span className="truncate text-sm" style={{ color: selected.length ? "var(--rev-text-hi)" : "var(--rev-text-muted)" }}>

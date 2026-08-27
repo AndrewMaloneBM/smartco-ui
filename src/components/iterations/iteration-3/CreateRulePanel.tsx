@@ -6,8 +6,9 @@ import { RevSelect } from "./revolve";
 import { REV_RADIUS } from "../iteration-1/tokens";
 import { Drawer, RevButton } from "./Drawer";
 import { SELLER_POOL, isKnownProductId } from "./data";
-import { BRANDS, OFFER_TYPES, type Brand, type OfferTypeCode } from "./logic";
+import { OFFER_TYPES, type Brand, type OfferTypeCode } from "./logic";
 import type { CreateInput } from "./engine";
+import { BrandFieldToggle, type BrandSelection } from "./BrandField";
 
 const RATE_MIN = 2;
 const RATE_MAX = 20;
@@ -196,6 +197,7 @@ export interface CreateSeed {
   grades?: string[];
   offerTypes?: string[];
   brands?: string[];
+  excludedBrands?: string[];
   rate?: string;
   startDate?: string;
   endDate?: string;
@@ -222,6 +224,7 @@ export function CreateRulePanel({
   const [grades, setGrades] = useState<string[]>([]);
   const [offerTypes, setOfferTypes] = useState<string[]>([]);
   const [brands, setBrands] = useState<string[]>([]);
+  const [excludedBrands, setExcludedBrands] = useState<string[]>([]);
   const [rate, setRate] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -242,6 +245,7 @@ export function CreateRulePanel({
       setGrades(initial?.grades ?? []);
       setOfferTypes(initial?.offerTypes ?? []);
       setBrands(initial?.brands ?? []);
+      setExcludedBrands(initial?.excludedBrands ?? []);
       setRate(initial?.rate ?? "");
       setStartDate(initial?.startDate ?? "");
       setEndDate(initial?.endDate ?? "");
@@ -275,6 +279,7 @@ export function CreateRulePanel({
     grades.length === 0 &&
     offerTypes.length === 0 &&
     brands.length === 0 &&
+    excludedBrands.length === 0 &&
     targeting === "ALL";
 
   const errors: string[] = [];
@@ -363,9 +368,14 @@ export function CreateRulePanel({
           <RevSelect label="categories" hideLabel options={[...CATEGORIES]} selected={categories} onChange={setCategories} showChips />
         </Field>
 
-        <Field label="Brand" optional hint="Empty = all brands.">
-          <RevSelect label="brands" hideLabel options={[...BRANDS]} selected={brands} onChange={setBrands} searchable showChips />
-        </Field>
+        {(() => {
+          const selection: BrandSelection = { included: brands, excluded: excludedBrands };
+          const onBrandChange = (next: BrandSelection) => {
+            setBrands(next.included);
+            setExcludedBrands(next.excluded);
+          };
+          return <BrandFieldToggle value={selection} onChange={onBrandChange} />;
+        })()}
 
         <Field
           label="Product ID"
