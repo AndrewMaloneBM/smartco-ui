@@ -203,6 +203,10 @@ export function Iteration3View({ scenario }: { scenario?: string | null } = {}) 
         setCreateInitial({ campaignName: "Apple devices push", brands: ["Apple"] });
         setCreateOpen(true);
         break;
+      case "brand-exclude":
+        setCreateInitial({ campaignName: "All smartphones except" });
+        setCreateOpen(true);
+        break;
       case "grade-filter":
         filtersNext = { ...DEFAULT_FILTERS, grade: ["EXCELLENT"] };
         break;

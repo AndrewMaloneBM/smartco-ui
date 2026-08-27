@@ -11,6 +11,7 @@ export const STEP3_SCENARIOS: { id: string; label: string; group: string }[] = [
   { id: "grade-create", label: "Create with Grade", group: "Create rule" },
   { id: "offer-type-create", label: "Create with Offer type", group: "Create rule" },
   { id: "brand-create", label: "Create with Brand", group: "Create rule" },
+  { id: "brand-exclude", label: "Brand exclude", group: "Create rule" },
   { id: "grade-filter", label: "Grade filter", group: "Filters" },
   { id: "offer-type-filter", label: "Offer type filter", group: "Filters" },
   { id: "brand-filter", label: "Brand filter", group: "Filters" },
