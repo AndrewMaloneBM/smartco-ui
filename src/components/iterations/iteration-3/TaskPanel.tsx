@@ -10,10 +10,11 @@ import { RESULT_META, type RuleResult, type Task, type TaskItem } from "./engine
 
 const TASK_PAGE_SIZE = 8;
 
-const TONE: Record<"success" | "warning" | "danger", { bg: string; fg: string }> = {
+const TONE: Record<"success" | "warning" | "danger" | "info", { bg: string; fg: string }> = {
   success: { bg: "var(--rev-success-bg)", fg: "var(--rev-success)" },
   warning: { bg: "var(--rev-warning-bg)", fg: "var(--rev-warning)" },
   danger: { bg: "var(--rev-danger-bg)", fg: "var(--rev-danger)" },
+  info: { bg: "var(--rev-info-bg)", fg: "var(--rev-info)" },
 };
 
 function fmtTime(iso: string): string {
@@ -82,17 +83,18 @@ const TAB_LABEL: Record<TaskTab, string> = {
 };
 
 /** One-glance outcome chips for a finished task (create → created/overlap/rejected). */
-function taskOutcome(t: Task): { label: string; tone: "success" | "warning" | "danger" }[] {
+function taskOutcome(t: Task): { label: string; tone: "success" | "warning" | "danger" | "info" }[] {
   if (t.kind !== "CREATE") {
     const verb = t.kind === "UPDATE" ? "updated" : "archived";
     return [{ label: `${t.items.length} ${verb}`, tone: "success" }];
   }
   const count = (r: RuleResult) => t.items.filter((i) => i.result === r).length;
-  const out: { label: string; tone: "success" | "warning" | "danger" }[] = [];
+  const out: { label: string; tone: "success" | "warning" | "danger" | "info" }[] = [];
   if (count("CREATED")) out.push({ label: `${count("CREATED")} created`, tone: "success" });
   if (count("OVERLAP")) out.push({ label: `${count("OVERLAP")} overlap`, tone: "warning" });
   if (count("STRICT_CONFLICT")) out.push({ label: `${count("STRICT_CONFLICT")} rejected`, tone: "danger" });
   if (count("SYSTEM_ERROR")) out.push({ label: `${count("SYSTEM_ERROR")} error`, tone: "danger" });
+  if (count("SKIPPED")) out.push({ label: `${count("SKIPPED")} skipped`, tone: "info" });
   return out;
 }
 
@@ -204,12 +206,15 @@ export function TaskPanel({
   tasks,
   onClose,
   initialTaskId,
+  onExportResults,
 }: {
   open: boolean;
   tasks: Task[];
   onClose: () => void;
   /** Deep-link straight to a task's detail on open (used by dev scenarios). */
   initialTaskId?: string | null;
+  /** Step 5: export the task's result breakdown to CSV (PRD: reconcile every input row). */
+  onExportResults?: (task: Task) => void;
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [tab, setTab] = useState<TaskTab>("ALL");
@@ -341,6 +346,11 @@ export function TaskPanel({
             <MetaField label="Rules">{selected.items.length}</MetaField>
             <MetaField label="Submitted by">{selected.author}</MetaField>
           </div>
+          {selected.status === "DONE" && onExportResults && (
+            <RevLink onClick={() => onExportResults(selected)} className="self-start">
+              Export results (CSV)
+            </RevLink>
+          )}
           <TaskDetail task={selected} />
         </div>
       )}
