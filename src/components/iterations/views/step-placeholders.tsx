@@ -24,11 +24,3 @@ export function Step4View() {
     </IterationPlaceholder>
   );
 }
-
-export function Step5View() {
-  return (
-    <IterationPlaceholder title="Step #5 — CSV import / export" status="Planned">
-      Bulk import and export of Smart Commission rules via CSV.
-    </IterationPlaceholder>
-  );
-}
