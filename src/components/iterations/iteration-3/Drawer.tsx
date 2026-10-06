@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { revolveVars, REV_RADIUS, REV_SHADOW, FONTFACE_CSS, REV_CSS } from "../iteration-1/tokens";
 import { RevDivider, RevIconButton } from "./revolve";
 
@@ -57,6 +57,37 @@ export function Drawer({
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
+  // RevDrawer a11y: focus the panel on open, trap Tab inside it while open,
+  // and restore focus to the trigger on close.
+  const panelRef = useRef<HTMLElement>(null);
+  const previouslyFocused = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    if (!open) return;
+    previouslyFocused.current = document.activeElement as HTMLElement | null;
+    panelRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Tab" || !panelRef.current) return;
+      const focusables = panelRef.current.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      previouslyFocused.current?.focus();
+    };
+  }, [open]);
+
   if (!rendered) return null;
 
   return (
@@ -72,9 +103,11 @@ export function Drawer({
         aria-hidden
       />
       <aside
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
-        aria-label={title}
+        aria-labelledby="drawer-title"
+        tabIndex={-1}
         className="relative flex h-full flex-col transition-transform ease-out"
         style={{
           width,
@@ -92,7 +125,8 @@ export function Drawer({
         >
           <div>
             <h2
-              className="text-lg font-semibold"
+              id="drawer-title"
+              className="text-xl font-semibold"
               style={{ color: "var(--rev-text-hi)", fontFamily: "var(--rev-font-display)" }}
             >
               {title}
