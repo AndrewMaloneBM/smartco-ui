@@ -55,16 +55,17 @@ import {
   type RevTagVariant,
 } from "../iteration-3/revolve";
 import {
+  classifyCandidate,
   downloadCsv,
   exportFileName,
   importedScopeKey,
   rulesToCsv,
   taskResultsToCsv,
   type CandidateRow,
-  type CsvMode,
   type RowIssue,
 } from "../iteration-5/csv";
-import { ImportCsvDrawer } from "../iteration-5/ImportCsvDrawer";
+import { ImportCsvDrawer, type ImportPayload } from "../iteration-5/ImportCsvDrawer";
+import { IMPORT_SAMPLES, type ImportSample } from "../iteration-5/samples";
 
 /**
  * Step 5 — CSV import/export (sub-PRD 6505926261). Same rules table as Step 3
@@ -205,6 +206,8 @@ export function Iteration5View({ scenario }: { scenario?: string | null } = {}) 
   const [updateOpen, setUpdateOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  /** Sample file a dev scenario loads into the import drawer (null = start at Upload). */
+  const [importSample, setImportSample] = useState<ImportSample | null>(null);
   const [tasksOpen, setTasksOpen] = useState(false);
   const [focusTaskId, setFocusTaskId] = useState<string | null>(null);
 
@@ -218,6 +221,7 @@ export function Iteration5View({ scenario }: { scenario?: string | null } = {}) 
     setUpdateOpen(false);
     setArchiveOpen(false);
     setImportOpen(false);
+    setImportSample(null);
     setTasksOpen(false);
     setFocusTaskId(null);
     setRules(seedRules());
@@ -231,9 +235,14 @@ export function Iteration5View({ scenario }: { scenario?: string | null } = {}) 
         // Land with an active Status filter so the filename token is visible.
         setFilters({ ...DEFAULT_FILTERS, status: ["VALIDATED"] });
         break;
+      case "import-upload":
+        setImportOpen(true);
+        break;
+      case "import-wrong-columns":
       case "import-clean":
       case "import-errors":
       case "import-conflicts":
+        setImportSample(IMPORT_SAMPLES[scenario]);
         setImportOpen(true);
         break;
       case "import-tracking":
@@ -351,6 +360,8 @@ export function Iteration5View({ scenario }: { scenario?: string | null } = {}) 
         .filter((x): x is OfferTypeCode => x !== undefined);
       const offerTypes = offerCodes.length ? offerCodes : [null];
       const sellers = c.sellerIds.length ? c.sellerIds : [null];
+      const cls = classifyCandidate(c, rules);
+      const overlapWith = cls.result === "OVERLAP" ? cls.relatedRuleId : undefined;
 
       for (const market of markets)
         for (const category of categories)
@@ -384,11 +395,12 @@ export function Iteration5View({ scenario }: { scenario?: string | null } = {}) 
                     priority: 400 + (i % 900),
                   };
                   // Blocked issues from validation keep their row out of the
-                  // task; anything left is classified per-result for realism.
+                  // task; anything left gets the same per-row classification the
+                  // drawer's Check step showed, so Results never contradicts it.
                   const rowIssues = issues.filter((x) => x.inputRow === c.inputRow && x.verdict === "BLOCKED");
                   const result: TaskItem["result"] = rowIssues.length
                     ? "STRICT_CONFLICT"
-                    : existing.some((r) => r.market === market && r.name === c.campaignName)
+                    : overlapWith
                       ? "OVERLAP"
                       : "CREATED";
                   existing.push(rule);
@@ -406,7 +418,8 @@ export function Iteration5View({ scenario }: { scenario?: string | null } = {}) 
                       ruleId: id,
                       scope: `${market} · ${category ?? "All categories"} · ${brand ?? "All brands"}${grade ? ` · ${grade}` : ""}`,
                       result,
-                      message: result === "OVERLAP" ? `Row #${c.inputRow}: created — a broader rule takes priority.` : `Row #${c.inputRow}: created successfully.`,
+                      message: result === "OVERLAP" ? `Row #${c.inputRow}: created — overlaps ${overlapWith}.` : `Row #${c.inputRow}: created successfully.`,
+                      relatedRuleId: overlapWith,
                       inputRow: c.inputRow,
                     });
                   }
@@ -490,13 +503,7 @@ export function Iteration5View({ scenario }: { scenario?: string | null } = {}) 
 
   // Demo task for the "import-tracking" scenario (module-level pure builder below).
 
-  const onImportSubmit = (payload: {
-    mode: CsvMode;
-    createCandidates: CandidateRow[];
-    skippedDuplicates: number[];
-    updateValues: { ruleId: string; name?: string; rate?: number; startDate?: string | null; endDate?: string | null }[];
-    issues: RowIssue[];
-  }) => {
+  const onImportSubmit = (payload: ImportPayload): string => {
     const nowIso = new Date().toISOString();
     const task =
       payload.mode === "create"
@@ -514,7 +521,36 @@ export function Iteration5View({ scenario }: { scenario?: string | null } = {}) 
         inputRow: row,
       });
     }
-    goToTask(task);
+    // Strict conflicts found at Check: not created, reported with the rule they duplicate.
+    for (const c of payload.skippedConflicts) {
+      task.items.push({
+        ruleId: "—",
+        scope: c.scopeLabel,
+        result: "STRICT_CONFLICT",
+        message: `Row #${c.inputRow}: not created — an identical rule already exists (${c.relatedRuleId}).`,
+        relatedRuleId: c.relatedRuleId,
+        inputRow: c.inputRow,
+      });
+    }
+    // The import drawer shows progress and results itself (its Results step), so
+    // the task runs without auto-opening the Tasks panel on top of it.
+    runTask(task);
+    return task.id;
+  };
+
+  const closeImport = () => {
+    setImportOpen(false);
+    setImportSample(null);
+  };
+
+  /** From the import drawer's Results step: swap to the Tasks panel on that task. */
+  const onViewImportTask = (taskId: string) => {
+    closeImport();
+    const t = setTimeout(() => {
+      setFocusTaskId(taskId);
+      setTasksOpen(true);
+    }, DRAWER_TRANSITION_MS);
+    timers.current.push(t);
   };
 
   // Re-import guardrail: scope keys of rules created by past CSV import tasks
@@ -735,7 +771,17 @@ export function Iteration5View({ scenario }: { scenario?: string | null } = {}) 
       <CreateRulePanel open={createOpen} onClose={() => setCreateOpen(false)} onSubmit={onCreate} />
       <BulkUpdatePanel open={updateOpen} count={selectedCount} onClose={() => setUpdateOpen(false)} onSubmit={onBulkUpdate} />
       <ArchiveConfirm open={archiveOpen} count={selectedCount} onClose={() => setArchiveOpen(false)} onConfirm={onArchive} />
-      <ImportCsvDrawer open={importOpen} onClose={() => setImportOpen(false)} rules={rules} importedScopes={importedScopes} onSubmit={onImportSubmit} />
+      <ImportCsvDrawer
+        open={importOpen}
+        onClose={closeImport}
+        rules={rules}
+        importedScopes={importedScopes}
+        tasks={tasks}
+        sample={importSample}
+        onSubmit={onImportSubmit}
+        onExportResults={onExportTaskResults}
+        onViewTask={onViewImportTask}
+      />
       <TaskPanel open={tasksOpen} tasks={tasks} onClose={() => setTasksOpen(false)} initialTaskId={focusTaskId} onExportResults={onExportTaskResults} />
     </div>
   );
