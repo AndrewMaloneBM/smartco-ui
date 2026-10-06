@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import { REV_RADIUS } from "../iteration-1/tokens";
 import { Drawer, RevButton } from "../iteration-3/Drawer";
-import { RevTag } from "../iteration-3/revolve";
+import { RevLink, RevTag } from "../iteration-3/revolve";
 import type { Market } from "@/lib/types";
 import type { Step3Rule } from "../iteration-3/logic";
 import {
@@ -54,16 +54,7 @@ function StepHeader({ n, label, active, done }: { n: number; label: string; acti
 }
 
 function TemplateLink({ label, csv, filename }: { label: string; csv: string; filename: string }) {
-  return (
-    <button
-      type="button"
-      onClick={() => downloadCsv(filename, csv)}
-      className="text-sm underline hover:opacity-70"
-      style={{ color: "var(--rev-text-hi)" }}
-    >
-      {label}
-    </button>
-  );
+  return <RevLink onClick={() => downloadCsv(filename, csv)}>{label}</RevLink>;
 }
 
 export function ImportCsvDrawer({
