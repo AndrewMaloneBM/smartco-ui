@@ -4,8 +4,10 @@
  */
 export const STEP5_SCENARIOS: { id: string; label: string; group: string }[] = [
   { id: "export-rules", label: "Export filtered rules", group: "Export" },
+  { id: "import-upload", label: "Import — upload", group: "Import" },
+  { id: "import-wrong-columns", label: "Import — wrong columns", group: "Import" },
   { id: "import-clean", label: "Import — clean file", group: "Import" },
   { id: "import-errors", label: "Import — blocked rows", group: "Import" },
-  { id: "import-conflicts", label: "Import — conflicts", group: "Import" },
+  { id: "import-conflicts", label: "Import — overlaps + strict conflicts", group: "Import" },
   { id: "import-tracking", label: "Import — task tracking + results export", group: "Import" },
 ];
