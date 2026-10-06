@@ -7,9 +7,11 @@ import { OriginalView } from "./views/original-view";
 import { Iteration1View } from "./views/iteration-1-view";
 import { Iteration2View } from "./views/iteration-2-view";
 import { Iteration3View } from "./views/iteration-3-view";
-import { Step4View, Step5View } from "./views/step-placeholders";
+import { Iteration5View } from "./views/iteration-5-view";
+import { Step4View } from "./views/step-placeholders";
 import { STEP2_SCENARIOS } from "./iteration-2/scenarios";
 import { STEP3_SCENARIOS } from "./iteration-3/scenarios";
+import { STEP5_SCENARIOS } from "./iteration-5/scenarios";
 
 /** Props every iteration view may receive. Views that ignore it stay prop-less. */
 export interface IterationViewProps {
@@ -81,7 +83,7 @@ export const ITERATIONS: IterationDef[] = [
     title: "Create, update, archive",
     blurb: "Create & manage rules (+ Product ID)",
     badge: "2",
-    status: "in-development",
+    status: "live",
     prdUrl:
       "https://backmarket.atlassian.net/wiki/spaces/sxp/pages/6503008637/sub-prd+Step+2+-+Create+update+archive+-+SmartCo",
     scenarios: STEP2_SCENARIOS,
@@ -93,7 +95,7 @@ export const ITERATIONS: IterationDef[] = [
     title: "Grade × Battery Type",
     blurb: "Add Grade + Offer type + Brand targeting",
     badge: "3",
-    status: "queued-for-dev",
+    status: "in-development",
     prdUrl:
       "https://backmarket.atlassian.net/wiki/spaces/sxp/pages/6505959304/sub-prd+Step+3+-+Granularity+upgrade+for+SmartCo",
     scenarios: STEP3_SCENARIOS,
@@ -114,8 +116,11 @@ export const ITERATIONS: IterationDef[] = [
     title: "CSV import / export",
     blurb: "Bulk import & export via CSV",
     badge: "5",
-    status: "planned",
-    Component: Step5View,
+    status: "in-development",
+    prdUrl:
+      "https://backmarket.atlassian.net/wiki/spaces/sxp/pages/6505926261/sub-prd+5+-+CSV+export+import+-+Smartco",
+    scenarios: STEP5_SCENARIOS,
+    Component: Iteration5View,
   },
 ];
 

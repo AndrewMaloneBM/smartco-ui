@@ -11,8 +11,9 @@ import type { Brand, OfferTypeCode, Step3Rule } from "./logic";
  * them after a short delay.
  */
 
-/** Per-rule outcome of a CREATE submission (PRD task-detail result column). */
-export type RuleResult = "CREATED" | "OVERLAP" | "STRICT_CONFLICT" | "SYSTEM_ERROR";
+/** Per-rule outcome of a CREATE submission (PRD task-detail result column).
+ *  SKIPPED: Step 5 CSV import — row deliberately not processed (e.g. flagged as a possible re-import). */
+export type RuleResult = "CREATED" | "OVERLAP" | "STRICT_CONFLICT" | "SYSTEM_ERROR" | "SKIPPED";
 
 export type TaskKind = "CREATE" | "UPDATE" | "ARCHIVE";
 export type TaskStatus = "ONGOING" | "DONE";
@@ -27,6 +28,8 @@ export interface TaskItem {
   message: string;
   /** For STRICT_CONFLICT / OVERLAP: the id of the rule we collided with. */
   relatedRuleId?: string;
+  /** CSV import: 1-based row number in the uploaded file (Step 5 task-results export). */
+  inputRow?: number;
 }
 
 /** Fields a bulk update can change (PRD/specs bulk update drawer). */
@@ -147,12 +150,13 @@ export function scopeLabel(r: Pick<Step1Rule, "market" | "category" | "product_i
 
 export const RESULT_META: Record<
   RuleResult,
-  { label: string; tone: "success" | "warning" | "danger" }
+  { label: string; tone: "success" | "warning" | "danger" | "info" }
 > = {
   CREATED: { label: "Created", tone: "success" },
   OVERLAP: { label: "Overlap", tone: "warning" },
   STRICT_CONFLICT: { label: "Strict conflict", tone: "danger" },
   SYSTEM_ERROR: { label: "System error", tone: "danger" },
+  SKIPPED: { label: "Skipped", tone: "info" },
 };
 
 // ── Task builders ──────────────────────────────────────────────────────────
