@@ -2,6 +2,7 @@ import { CATEGORIES, GRADES, MARKETS, RATE_MIN, RATE_MAX, type Market } from "@/
 import { BRANDS, OFFER_TYPES, type Step3Rule } from "../iteration-3/logic";
 import { SELLER_POOL, isKnownProductId } from "../iteration-3/data";
 import type { Step1Rule } from "../iteration-1/logic";
+import { deviceLabel } from "./device-names";
 
 /**
  * Step 5 CSV import/export logic (sub-PRD 6505926261). Pure functions:
@@ -304,7 +305,7 @@ export function classifyCandidate(
   const label = [
     scope.market,
     scope.category ?? "All categories",
-    scope.product_id ?? "",
+    scope.product_id ? deviceLabel(scope.product_id) : "",
     cand.brands.length ? `Brand: ${cand.brands.join(", ")}` : "",
     cand.grades.length ? `Grade: ${cand.grades.join(", ")}` : "",
     scope.seller_targeting === "ALL" ? "All sellers" : scope.seller_ids[0],
