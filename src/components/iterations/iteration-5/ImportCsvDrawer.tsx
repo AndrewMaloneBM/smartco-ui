@@ -378,7 +378,7 @@ export function ImportCsvDrawer({
 
   const templateLink = (
     <RevLink
-      className="self-start font-semibold"
+      className="font-semibold"
       onClick={() =>
         downloadCsv(
           mode === "create" ? "smartco-import-create-template.csv" : "smartco-import-update-template.csv",
@@ -395,7 +395,6 @@ export function ImportCsvDrawer({
       open={open}
       onClose={onClose}
       title="Import rules from CSV"
-      subtitle="Bulk-create or bulk-update commission rules from a template file."
       width={640}
       footer={footer}
     >
@@ -407,11 +406,18 @@ export function ImportCsvDrawer({
           onStepClick={step === "check" ? (i) => setStep(STEPS[i].id) : undefined}
         />
 
+        <p className="text-sm leading-5" style={{ color: "var(--rev-text-low)" }}>
+          Bulk-create or bulk-update commission rules from a template file.
+        </p>
+
         {/* ── 1. Upload ─────────────────────────────────────────────────── */}
         {step === "upload" && (
           <>
             <section className="flex flex-col gap-3" role="radiogroup" aria-label="What do you want to do?">
-              <SectionTitle>What do you want to do?</SectionTitle>
+              <div className="flex items-center justify-between">
+                <SectionTitle>What do you want to do?</SectionTitle>
+                {templateLink}
+              </div>
               <RevRadioFull
                 name="import-mode"
                 checked={mode === "create"}
@@ -445,7 +451,6 @@ export function ImportCsvDrawer({
                   {fileError.missing.join(", ")}. Nothing was imported.
                 </RevInfoBlock>
               )}
-              {templateLink}
             </section>
           </>
         )}
