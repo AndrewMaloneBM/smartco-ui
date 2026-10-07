@@ -386,7 +386,7 @@ export function ImportCsvDrawer({
         )
       }
     >
-      Download {mode} template
+      Download template
     </RevLink>
   );
 
