@@ -224,7 +224,7 @@ export function validateCreateRows(rows: CsvRow[]): RowIssue[] {
     if (rate === "" || Number.isNaN(rateNum) || rateNum < 0 || rateNum > 99.99)
       push("BLOCKED", "commission_rate must be a number between 0 and 99.99.");
     else if (rateNum < RATE_MIN || rateNum > RATE_MAX)
-      push("WARNING", `Rate ${rateNum}% is outside the standard ${RATE_MIN}–${RATE_MAX}% band.`);
+      push("WARNING", `Rate ${rateNum}% is outside the standard ${RATE_MIN}% to ${RATE_MAX}% band.`);
 
     if (c.start_date && !validDate(c.start_date)) push("BLOCKED", `start_date "${c.start_date}" must be yyyy-mm-dd.`);
     if (c.end_date && !validDate(c.end_date)) push("BLOCKED", `end_date "${c.end_date}" must be yyyy-mm-dd.`);
@@ -253,7 +253,7 @@ export function validateUpdateRows(rows: CsvRow[], rules: Step1Rule[]): RowIssue
     if (c.commission_rate) {
       const n = Number(c.commission_rate);
       if (Number.isNaN(n) || n < 0 || n > 99.99) push("BLOCKED", "commission_rate must be a number between 0 and 99.99.");
-      else if (n < RATE_MIN || n > RATE_MAX) push("WARNING", `Rate ${n}% is outside the standard ${RATE_MIN}–${RATE_MAX}% band.`);
+      else if (n < RATE_MIN || n > RATE_MAX) push("WARNING", `Rate ${n}% is outside the standard ${RATE_MIN}% to ${RATE_MAX}% band.`);
     }
     if (c.start_date && !validDate(c.start_date)) push("BLOCKED", `start_date "${c.start_date}" must be yyyy-mm-dd.`);
     if (c.end_date && !validDate(c.end_date)) push("BLOCKED", `end_date "${c.end_date}" must be yyyy-mm-dd.`);

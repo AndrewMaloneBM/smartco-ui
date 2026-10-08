@@ -5,7 +5,8 @@ import { useRef, type ReactNode } from "react";
 /**
  * Step 5 import drawer — spec-matched React stand-ins for the Revolve components
  * used in the Figma flow ("CSV import · flow v2", Homepage file, node 6097:820):
- * Stepper, Radio · Full, Input File Upload (+ Document), Info Block, Text List.
+ * Stepper, Radio · Full, Input File Upload (+ Document), Info Block, Text List,
+ * Table (Check step redesign, node 6202:1553).
  * Sizes, radii and colours are read from the Figma instances; icons are the
  * 🖼️ Icons library SVGs. Kept local to iteration-5 so Steps 1–3 stay untouched.
  */
@@ -84,6 +85,15 @@ function IconDocument(props: IconProps) {
   return (
     <Svg {...props}>
       <path fillRule="evenodd" clipRule="evenodd" d="M18 3.25C19.5188 3.25 20.75 4.48122 20.75 6V18C20.75 19.5188 19.5188 20.75 18 20.75H6C4.48122 20.75 3.25 19.5188 3.25 18V6C3.25 4.48122 4.48122 3.25 6 3.25H18ZM8 14.75C7.58592 14.75 7.25022 15.086 7.25 15.5C7.25 15.9142 7.58579 16.25 8 16.25H11C11.4142 16.25 11.75 15.9142 11.75 15.5C11.7498 15.086 11.4141 14.75 11 14.75H8ZM8 11.25C7.58592 11.25 7.25022 11.586 7.25 12C7.25 12.4142 7.58579 12.75 8 12.75H16C16.4142 12.75 16.75 12.4142 16.75 12C16.7498 11.586 16.4141 11.25 16 11.25H8ZM8 7.75C7.58592 7.75 7.25022 8.08597 7.25 8.5C7.25 8.91421 7.58579 9.25 8 9.25H16C16.4142 9.25 16.75 8.91421 16.75 8.5C16.7498 8.08597 16.4141 7.75 16 7.75H8Z" fill="currentColor" />
+    </Svg>
+  );
+}
+
+/** 🖼️ Icons "Spreadsheet In Square Filled" — the CSV file icon on the Check step. */
+export function IconSpreadsheet(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path fillRule="evenodd" clipRule="evenodd" d="M18 3.25C19.5188 3.25 20.75 4.48122 20.75 6V18C20.75 19.5188 19.5188 20.75 18 20.75H6C4.48122 20.75 3.25 19.5188 3.25 18V6C3.25 4.48122 4.48122 3.25 6 3.25H18ZM7 12C6.72386 12 6.5 12.2239 6.5 12.5V15.5C6.5 15.7761 6.72386 16 7 16H8.5C8.77614 16 9 15.7761 9 15.5V12.5C9 12.2239 8.77614 12 8.5 12H7ZM11 12C10.7239 12 10.5 12.2239 10.5 12.5V15.5C10.5 15.7761 10.7239 16 11 16H17C17.2761 16 17.5 15.7761 17.5 15.5V12.5C17.5 12.2239 17.2761 12 17 12H11ZM7 8C6.72386 8 6.5 8.22386 6.5 8.5V10C6.5 10.2761 6.72386 10.5 7 10.5H8.5C8.77614 10.5 9 10.2761 9 10V8.5C9 8.22386 8.77614 8 8.5 8H7ZM11 8C10.7239 8 10.5 8.22386 10.5 8.5V10C10.5 10.2761 10.7239 10.5 11 10.5H17C17.2761 10.5 17.5 10.2761 17.5 10V8.5C17.5 8.22386 17.2761 8 17 8H11Z" fill="currentColor" />
     </Svg>
   );
 }
@@ -262,6 +272,93 @@ export function RevTextList({ items }: { items: TextListItem[] }) {
         </li>
       ))}
     </ul>
+  );
+}
+
+// ── Table ────────────────────────────────────────────────────────────────────
+
+export interface RevTableColumn {
+  key: string;
+  header: string;
+  /** Fixed width in px. Leave it off one column so it takes the remaining width. */
+  width?: number;
+  /** "number" right-aligns the cells with tabular figures. The header stays left, as in Revolve. */
+  type?: "text" | "number";
+}
+
+export interface RevTableCell {
+  text: ReactNode;
+  description?: ReactNode;
+}
+
+export interface RevTableRow {
+  key: string | number;
+  /** One cell per column key. */
+  cells: Record<string, RevTableCell>;
+}
+
+/**
+ * 🚀 Components "Web ▸ Table | Desktop - Column" (columnType=default), in a
+ * compact density for the 640px drawer: Revolve's 56px header and 96px rows are
+ * too tall here. 48px header on bg/static-default-hi with a 16/24 semibold
+ * title. Body rows hug their content with 12px above and below: a 16/24 text
+ * line and an optional 14/20 description 4px below (48px for one line, 72px
+ * with a one-line description), closed by a 1px border/static-default-low
+ * hairline. No outer border, no radius.
+ */
+export function RevTable({ caption, columns, rows }: { caption: string; columns: RevTableColumn[]; rows: RevTableRow[] }) {
+  return (
+    <table className="w-full border-collapse text-left" style={{ tableLayout: "fixed" }}>
+      <caption className="sr-only">{caption}</caption>
+      <colgroup>
+        {columns.map((c) => (
+          <col key={c.key} style={c.width ? { width: c.width } : undefined} />
+        ))}
+      </colgroup>
+      <thead>
+        <tr>
+          {columns.map((c) => (
+            <th
+              key={c.key}
+              scope="col"
+              className="text-left text-base font-semibold leading-6"
+              style={{ height: 48, padding: "12px 16px", background: "var(--rev-static-hi)", color: "var(--rev-text-hi)" }}
+            >
+              {c.header}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr key={r.key} style={{ borderBottom: "1px solid var(--rev-border)" }}>
+            {columns.map((c) => {
+              const cell = r.cells[c.key];
+              const isNumber = c.type === "number";
+              return (
+                <td
+                  key={c.key}
+                  className={`break-words align-middle ${isNumber ? "text-right" : "text-left"}`}
+                  style={{ padding: "12px 16px" }}
+                >
+                  <span
+                    className="block text-base leading-6"
+                    style={{ color: "var(--rev-text-mid)", fontVariantNumeric: isNumber ? "tabular-nums" : undefined }}
+                  >
+                    {cell?.text}
+                  </span>
+                  {cell?.description && (
+                    <span className="mt-1 block text-sm leading-5" style={{ color: "var(--rev-text-low)" }}>
+                      {cell.description}
+                    </span>
+                  )}
+                </td>
+              );
+            })}
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
 
