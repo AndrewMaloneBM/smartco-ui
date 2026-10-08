@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { MARKETS, type Market } from "@/lib/types";
 import { REV_RADIUS } from "../iteration-1/tokens";
 import { DRAWER_TRANSITION_MS, Drawer, RevButton } from "../iteration-3/Drawer";
-import { RevCheckbox, RevLink, RevSpinner, RevTag } from "../iteration-3/revolve";
+import { RevCheckbox, RevDivider, RevLink, RevSpinner, RevTag } from "../iteration-3/revolve";
+import { RevPagination } from "../iteration-1/RevPagination";
 import type { Step3Rule } from "../iteration-3/logic";
 import type { Task } from "../iteration-3/engine";
 import {
@@ -27,18 +28,22 @@ import type { ImportSample } from "./samples";
 import {
   IconBlocked,
   IconCheckInCircle,
+  IconSpreadsheet,
   IconWarning,
   RevFileUpload,
   RevInfoBlock,
   RevRadioFull,
   RevStepper,
+  RevTable,
   RevTextList,
+  type RevTableColumn,
 } from "./import-ui";
 
 /**
  * Step 5 import drawer (sub-PRD 6505926261). Design: Figma "CSV import · flow v2"
- * (Homepage file, node 6097:820). North star: an editor always knows what the
- * import will do before confirming, and what it did after.
+ * (Homepage file, node 6097:820); the Check step follows "CSV import · 2 Check ·
+ * redesign · verdict first" (node 6202:1553). North star: an editor always knows
+ * what the import will do before confirming, and what it did after.
  *
  * Three steps, each mapped to the PRD's user stories:
  * 1. Upload  — pick create/update, download the template, select the file. A file
@@ -91,6 +96,45 @@ const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? o
 /** 🚀 Components "Tag" (size=small): 16px tall, 2px side padding, 2px radius (RevTag.md small spec). */
 const TAG_STYLE: React.CSSProperties = { borderRadius: REV_RADIUS.xs, padding: "0 2px", lineHeight: "16px" };
 
+/** Rows-per-page of the Check step tables (RevPagination, same as the rules table). */
+const LIST_PAGE_SIZE = 5;
+
+/**
+ * PRD (sub-PRD 6505926261, per Lluc): before submit the backend validates CSV
+ * formatting only. Identical rules and overlaps are detected during processing
+ * and surface in Results. Keep this `false` to match the PRD. Set it to `true`
+ * to preview the design proposal that also shows them on Check (third drawer of
+ * the Figma redesign): a "will be skipped" table, an overlap warning, and the
+ * overlapping rows listed first.
+ */
+const SHOW_CONFLICTS_ON_CHECK = false;
+
+const REASON_COLUMNS: RevTableColumn[] = [
+  { key: "row", header: "Row", width: 72 },
+  { key: "reason", header: "Reason" },
+];
+const IMPORT_COLUMNS: RevTableColumn[] = [
+  { key: "row", header: "Row", width: 72 },
+  { key: "campaign", header: "Campaign" },
+  { key: "commission", header: "Commission", width: 136, type: "number" },
+];
+const UPDATE_COLUMNS: RevTableColumn[] = [
+  { key: "rule", header: "Rule" },
+  { key: "change", header: "Change" },
+];
+
+/** Labels arrive " · "-separated (classifyCandidate, describeUpdate); the Check step reads them as a comma list. */
+const commaList = (label: string) => label.split(" · ").join(", ");
+
+function pageOf<T>(items: T[], page: number): T[] {
+  return items.slice((page - 1) * LIST_PAGE_SIZE, page * LIST_PAGE_SIZE);
+}
+
+/** Keeps a page valid when its list shrinks (e.g. after ticking a duplicate's "import anyway"). */
+function clampPage(page: number, total: number): number {
+  return Math.min(page, Math.max(1, Math.ceil(total / LIST_PAGE_SIZE)));
+}
+
 /** Number of rules one CSV row fans out to (one per market × category × grade × brand × offer type × seller). */
 function ruleCount(c: CandidateRow): number {
   return (
@@ -130,11 +174,33 @@ function Helper({ children }: { children: ReactNode }) {
   );
 }
 
-/** Bordered, scrollable list of the rows that will be (or were) imported. */
-function RowTable({ children }: { children: ReactNode }) {
+/** One block of the Check step: 20/28 display title, optional 14/20 description, 16px to its content. */
+function CheckSection({ title, description, children }: { title: ReactNode; description?: ReactNode; children: ReactNode }) {
   return (
-    <div className="flex max-h-64 flex-col overflow-y-auto" style={{ border: "1px solid var(--rev-border)", borderRadius: REV_RADIUS.sm }}>
+    <section className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1">
+        <h4 className="text-xl font-semibold leading-7" style={{ color: "var(--rev-text-hi)", fontFamily: "var(--rev-font-display)" }}>
+          {title}
+        </h4>
+        {description && <Helper>{description}</Helper>}
+      </div>
       {children}
+    </section>
+  );
+}
+
+/** Row count on the left, RevPagination on the right. Renders nothing while the table fits on one page. */
+function TablePager({ page, total, onChange }: { page: number; total: number; onChange: (page: number) => void }) {
+  const pages = Math.ceil(total / LIST_PAGE_SIZE);
+  if (pages <= 1) return null;
+  const from = (page - 1) * LIST_PAGE_SIZE + 1;
+  const to = Math.min(total, page * LIST_PAGE_SIZE);
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <span className="text-sm leading-5" style={{ color: "var(--rev-text-low)" }}>
+        {from === to ? from : `${from} to ${to}`} of {plural(total, "row")}
+      </span>
+      <RevPagination page={page} total={pages} onChange={onChange} />
     </div>
   );
 }
@@ -175,6 +241,10 @@ export function ImportCsvDrawer({
   const [updateValues, setUpdateValues] = useState<UpdateValue[]>([]);
   /** Row numbers the editor chose to import despite a DUPLICATE flag (default: skip). */
   const [importAnyway, setImportAnyway] = useState<Set<number>>(new Set());
+  /** Pages of the Check step tables (LIST_PAGE_SIZE rows per page). */
+  const [listPage, setListPage] = useState(1);
+  const [blockedPage, setBlockedPage] = useState(1);
+  const [skippedPage, setSkippedPage] = useState(1);
   const [submitted, setSubmitted] = useState<Submitted | null>(null);
 
   const clearFile = () => {
@@ -185,6 +255,9 @@ export function ImportCsvDrawer({
     setCandidates([]);
     setUpdateValues([]);
     setImportAnyway(new Set());
+    setListPage(1);
+    setBlockedPage(1);
+    setSkippedPage(1);
   };
 
   const reset = () => {
@@ -261,6 +334,13 @@ export function ImportCsvDrawer({
     reader.onload = () => ingest(file.name, String(reader.result ?? ""), mode);
     reader.readAsText(file);
   };
+
+  // A new file, mode or step re-starts the Check tables at page 1.
+  useEffect(() => {
+    setListPage(1);
+    setBlockedPage(1);
+    setSkippedPage(1);
+  }, [step, fileName, mode]);
 
   // Opening with a scenario sample loads it and jumps to Check; closing resets the
   // drawer once the slide-out has finished, so the content doesn't flash on the way out.
@@ -343,6 +423,30 @@ export function ImportCsvDrawer({
   const task = submitted ? tasks.find((t) => t.id === submitted.taskId) : undefined;
   const importing = step === "results" && task?.status === "ONGOING";
 
+  // ── Check step display ────────────────────────────────────────────────────
+  const showConflicts = SHOW_CONFLICTS_ON_CHECK && mode === "create";
+  const done = mode === "create" ? "imported" : "updated";
+  const verdict =
+    importCount === 0
+      ? `No rows will be ${done}`
+      : importCount === rowCount
+        ? rowCount === 1
+          ? `The row will be ${done}`
+          : `All ${rowCount} rows will be ${done}`
+        : `${importCount} of ${plural(rowCount, "row")} will be ${done}`;
+  const allClear = nothingFlagged && importCount > 0;
+  const warningSet = new Set(warningRows.map((w) => w.inputRow));
+  const overlapSet = new Set(showConflicts ? overlaps.map((o) => o.cand.inputRow) : []);
+  const flagRank = (inputRow: number) => (warningSet.has(inputRow) ? 0 : overlapSet.has(inputRow) ? 1 : 2);
+  // Flagged rows lead the table. Display only: `ready` keeps file order for confirm().
+  const readySorted = [...ready].sort(
+    (a, b) => flagRank(a.cand.inputRow) - flagRank(b.cand.inputRow) || a.cand.inputRow - b.cand.inputRow
+  );
+  const listTotal = mode === "create" ? readySorted.length : updateValues.length;
+  const pageSafe = clampPage(listPage, listTotal);
+  const blockedPageSafe = clampPage(blockedPage, blockedRows.length);
+  const skippedPageSafe = clampPage(skippedPage, strictConflicts.length);
+
   // ── Footer ────────────────────────────────────────────────────────────────
   const footer = (() => {
     if (step === "upload")
@@ -357,6 +461,11 @@ export function ImportCsvDrawer({
     if (step === "check")
       return (
         <>
+          <p className="mr-auto min-w-0 text-sm leading-5" style={{ color: "var(--rev-text-low)" }}>
+            {importCount === 0
+              ? "There's nothing to import from this file. Go back to upload a corrected one."
+              : `Nothing is ${mode === "create" ? "created" : "updated"} until you import.`}
+          </p>
           <RevButton variant="secondary" onClick={() => setStep("upload")}>Back</RevButton>
           <RevButton variant="primary" onClick={confirm} disabled={importCount === 0}>
             Import {plural(importCount, "row")}
@@ -408,9 +517,11 @@ export function ImportCsvDrawer({
           onStepClick={step === "check" ? (i) => setStep(STEPS[i].id) : undefined}
         />
 
-        <p className="text-sm leading-5" style={{ color: "var(--rev-text-low)" }}>
-          Bulk-create or bulk-update commission rules from a template file.
-        </p>
+        {step !== "check" && (
+          <p className="text-sm leading-5" style={{ color: "var(--rev-text-low)" }}>
+            Bulk-create or bulk-update commission rules from a template file.
+          </p>
+        )}
 
         {/* ── 1. Upload ─────────────────────────────────────────────────── */}
         {step === "upload" && (
@@ -460,132 +571,184 @@ export function ImportCsvDrawer({
         {/* ── 2. Check ──────────────────────────────────────────────────── */}
         {step === "check" && (
           <>
-            <section className="flex flex-col gap-3">
-              <div className="flex flex-col">
-                <span className="break-all text-sm font-semibold leading-5" style={{ color: "var(--rev-text-hi)" }}>{fileName}</span>
-                <Helper>
-                  {mode === "create" ? "Create new rules" : "Update existing rules"} · {plural(rowCount, "row")}
-                </Helper>
+            {/* Verdict first: the outcome, the file it applies to, then only the exceptions as tags. */}
+            <div className="flex flex-col" role="status">
+              <h3
+                className="text-[28px] font-semibold leading-10"
+                style={{ color: "var(--rev-text-hi)", fontFamily: "var(--rev-font-display)" }}
+              >
+                {verdict}
+              </h3>
+              <div className="mt-1 flex items-center gap-2">
+                <IconSpreadsheet style={{ color: "var(--rev-success)" }} />
+                <p className="min-w-0 text-sm leading-5" style={{ color: "var(--rev-text-low)" }}>
+                  <span className="break-all font-semibold" style={{ color: "var(--rev-text-hi)" }}>{fileName}</span>{" "}
+                  <span className="ml-1">
+                    {mode === "create" ? "Create new rules" : "Update existing rules"}, {plural(rowCount, "row")}
+                  </span>
+                </p>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <RevTag variant={importCount > 0 ? "success" : "secondary"} size="small" style={TAG_STYLE}>{importCount} ready to import</RevTag>
-                {blockedRows.length > 0 && <RevTag variant="danger" size="small" style={TAG_STYLE}>{blockedRows.length} blocked</RevTag>}
-                {duplicates.length > 0 && <RevTag variant="info" size="small" style={TAG_STYLE}>{plural(duplicates.length, "possible duplicate")}</RevTag>}
-                {warningRows.length > 0 && <RevTag variant="warning" size="small" style={TAG_STYLE}>{plural(warningRows.length, "warning")}</RevTag>}
-              </div>
-            </section>
-
-            {nothingFlagged && (
-              <div className="flex items-center gap-2" role="status">
-                <IconCheckInCircle style={{ color: "var(--rev-success)" }} />
-                <span className="text-sm font-semibold leading-5" style={{ color: "var(--rev-text-hi)" }}>
-                  {importCount === 1 ? "The row is" : `All ${importCount} rows are`} ready to import
-                </span>
-                <span className="text-sm leading-5" style={{ color: "var(--rev-text-low)" }}>
-                  · No blocked rows found.
-                </span>
-              </div>
-            )}
+              {(allClear || blockedRows.length > 0 || duplicates.length > 0 || warningRows.length > 0 || (showConflicts && (strictConflicts.length > 0 || overlaps.length > 0))) && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {allClear && <RevTag variant="success" size="small" style={TAG_STYLE}>No issues found</RevTag>}
+                  {blockedRows.length > 0 && <RevTag variant="danger" size="small" style={TAG_STYLE}>{blockedRows.length} left out</RevTag>}
+                  {showConflicts && strictConflicts.length > 0 && <RevTag variant="danger" size="small" style={TAG_STYLE}>{strictConflicts.length} skipped</RevTag>}
+                  {duplicates.length > 0 && <RevTag variant="info" size="small" style={TAG_STYLE}>{plural(duplicates.length, "possible duplicate")}</RevTag>}
+                  {warningRows.length > 0 && <RevTag variant="warning" size="small" style={TAG_STYLE}>{warningRows.length} to double-check</RevTag>}
+                  {showConflicts && overlaps.length > 0 && <RevTag variant="warning" size="small" style={TAG_STYLE}>{plural(overlaps.length, "overlap")}</RevTag>}
+                </div>
+              )}
+            </div>
 
             {blockedRows.length > 0 && (
-              <section className="flex flex-col gap-3">
-                <SectionTitle>
-                  {plural(blockedRows.length, "blocked row")} will be left out
-                </SectionTitle>
-                <RevTextList
-                  items={blockedRows.map((b) => ({ key: b.inputRow, icon: <IconBlocked />, title: `Row ${b.inputRow}`, description: b.messages.join(" ") }))}
-                />
-                <Helper>To include {blockedRows.length === 1 ? "it" : "them"}, fix the file and upload it again.</Helper>
-              </section>
+              <>
+                <RevDivider />
+                <CheckSection
+                  title={`${plural(blockedRows.length, "row")} will be left out`}
+                  description={`To include ${blockedRows.length === 1 ? "it" : "them"}, fix the file and upload it again.`}
+                >
+                  <RevTable
+                    caption="Rows left out"
+                    columns={REASON_COLUMNS}
+                    rows={pageOf(blockedRows, blockedPageSafe).map((b) => ({
+                      key: b.inputRow,
+                      cells: { row: { text: b.inputRow }, reason: { text: b.messages.join(" ") } },
+                    }))}
+                  />
+                  <TablePager page={blockedPageSafe} total={blockedRows.length} onChange={setBlockedPage} />
+                </CheckSection>
+              </>
             )}
 
-            {/* Conflicts (identical rules / overlaps) are NOT checked here: the
-                backend validates CSV formatting only, and conflict detection
-                happens during processing. They surface as skipped rows in the
-                Results step. */}
+            {/* Conflicts (identical rules / overlaps) are NOT checked here per the PRD:
+                the backend validates CSV formatting only, and conflict detection
+                happens during processing. They surface in the Results step. The
+                blocks behind `showConflicts` are the design proposal, off by default
+                (see SHOW_CONFLICTS_ON_CHECK). */}
+            {showConflicts && strictConflicts.length > 0 && (
+              <>
+                <RevDivider />
+                <CheckSection
+                  title={`${plural(strictConflicts.length, "row")} will be skipped`}
+                  description={`An identical rule already exists, so ${strictConflicts.length === 1 ? "this row" : "these rows"} won't be imported.`}
+                >
+                  <RevTable
+                    caption="Rows skipped"
+                    columns={REASON_COLUMNS}
+                    rows={pageOf(strictConflicts, skippedPageSafe).map(({ cand, cls }) => ({
+                      key: cand.inputRow,
+                      cells: {
+                        row: { text: cand.inputRow },
+                        reason: { text: `Identical to ${cls.relatedRuleId ?? "an existing rule"}`, description: cand.campaignName },
+                      },
+                    }))}
+                  />
+                  <TablePager page={skippedPageSafe} total={strictConflicts.length} onChange={setSkippedPage} />
+                </CheckSection>
+              </>
+            )}
 
             {duplicates.length > 0 && (
-              <section className="flex flex-col gap-3">
-                <RevInfoBlock
-                  tone="info"
-                  title={`${plural(duplicates.length, "row")} ${duplicates.length === 1 ? "looks" : "look"} already imported`}
-                >
-                  Skipped unless you tick {duplicates.length === 1 ? "it" : "them"}.
-                </RevInfoBlock>
-                <RevTextList
-                  items={duplicates.map((d) => ({
-                    key: d.inputRow,
-                    icon: <IconWarning />,
-                    title: rowLabel(d.inputRow),
-                    description: `Matches ${d.relatedRuleId ?? "a rule"} from a previous import.`,
-                    trailing: (
-                      <label className="flex shrink-0 cursor-pointer items-center gap-2 text-sm leading-6" style={{ color: "var(--rev-text-hi)" }}>
-                        <RevCheckbox
-                          checked={importAnyway.has(d.inputRow)}
-                          onChange={() =>
-                            setImportAnyway((prev) => {
-                              const next = new Set(prev);
-                              if (next.has(d.inputRow)) next.delete(d.inputRow);
-                              else next.add(d.inputRow);
-                              return next;
-                            })
-                          }
-                        />
-                        Import anyway
-                      </label>
-                    ),
-                  }))}
-                />
-              </section>
-            )}
-
-            {warningRows.length > 0 && (
-              <section className="flex flex-col gap-3">
-                <SectionTitle>{plural(warningRows.length, "row")} to double-check</SectionTitle>
-                <RevTextList
-                  items={warningRows.map((w) => ({ key: w.inputRow, icon: <IconWarning />, title: rowLabel(w.inputRow), description: w.messages.join(" ") }))}
-                />
-                <Helper>{warningRows.length === 1 ? "This row is" : "These rows are"} still imported.</Helper>
-              </section>
+              <>
+                <RevDivider />
+                <section className="flex flex-col gap-3">
+                  <RevInfoBlock
+                    tone="info"
+                    title={`${plural(duplicates.length, "row")} ${duplicates.length === 1 ? "looks" : "look"} already imported`}
+                  >
+                    Skipped unless you tick {duplicates.length === 1 ? "it" : "them"}.
+                  </RevInfoBlock>
+                  <RevTextList
+                    items={duplicates.map((d) => ({
+                      key: d.inputRow,
+                      icon: <IconWarning />,
+                      title: commaList(rowLabel(d.inputRow)),
+                      description: `Matches ${d.relatedRuleId ?? "a rule"} from a previous import.`,
+                      trailing: (
+                        <label className="flex shrink-0 cursor-pointer items-center gap-2 text-sm leading-6" style={{ color: "var(--rev-text-hi)" }}>
+                          <RevCheckbox
+                            checked={importAnyway.has(d.inputRow)}
+                            onChange={() =>
+                              setImportAnyway((prev) => {
+                                const next = new Set(prev);
+                                if (next.has(d.inputRow)) next.delete(d.inputRow);
+                                else next.add(d.inputRow);
+                                return next;
+                              })
+                            }
+                          />
+                          Import anyway
+                        </label>
+                      ),
+                    }))}
+                  />
+                </section>
+              </>
             )}
 
             {importCount > 0 && (
-              <section className="flex flex-col gap-3">
-                <SectionTitle>
-                  {plural(importCount, "row")} to import
-                  {mode === "create" && rulesToCreate !== importCount && (
-                    <span className="font-normal" style={{ color: "var(--rev-text-low)" }}> · creates {plural(rulesToCreate, "rule")}</span>
+              <>
+                <RevDivider />
+                <CheckSection
+                  title={`${plural(importCount, "row")} to ${mode === "create" ? "import" : "update"}`}
+                  description={mode === "create" && rulesToCreate !== importCount ? `Creates ${plural(rulesToCreate, "rule")}.` : undefined}
+                >
+                  {warningRows.length === 1 && (
+                    <RevInfoBlock tone="warning" title={`Row ${warningRows[0].inputRow} to double-check`}>
+                      {warningRows[0].messages.join(" ")} This row will still be {done}.
+                    </RevInfoBlock>
                   )}
-                </SectionTitle>
-                <RowTable>
-                  {mode === "create"
-                    ? ready.map(({ cand, cls }) => (
-                        <div key={cand.inputRow} className="flex items-center justify-between gap-3 px-3 py-2" style={{ borderBottom: "1px solid var(--rev-border)" }}>
-                          <div className="flex min-w-0 flex-col">
-                            <span className="text-sm font-semibold leading-5" style={{ color: "var(--rev-text-hi)" }}>{cand.campaignName}</span>
-                            <span className="text-xs leading-4" style={{ color: "var(--rev-text-low)" }}>Row {cand.inputRow} · {cls.scopeLabel}</span>
-                          </div>
-                          <span className="shrink-0 text-sm font-semibold" style={{ color: "var(--rev-text-mid)" }}>{cand.rate.toFixed(1)}%</span>
-                        </div>
-                      ))
-                    : updateValues.map((u) => {
-                        const r = rules.find((x) => x.id === u.ruleId);
-                        return (
-                          <div key={u.ruleId} className="flex flex-col px-3 py-2" style={{ borderBottom: "1px solid var(--rev-border)" }}>
-                            <span className="text-sm font-semibold leading-5" style={{ color: "var(--rev-text-hi)" }}>{u.ruleId}{r ? ` — ${r.name}` : ""}</span>
-                            <span className="text-xs leading-4" style={{ color: "var(--rev-text-low)" }}>{describeUpdate(u)}</span>
-                          </div>
-                        );
-                      })}
-                </RowTable>
-              </section>
+                  {warningRows.length > 1 && (
+                    <RevInfoBlock tone="warning" title={`${warningRows.length} rows to double-check`}>
+                      <ul className="flex flex-col gap-1">
+                        {warningRows.map((w) => (
+                          <li key={w.inputRow}>Row {w.inputRow}: {w.messages.join(" ")}</li>
+                        ))}
+                      </ul>
+                      <p className="mt-3">These rows will still be {done}.</p>
+                    </RevInfoBlock>
+                  )}
+                  {showConflicts && overlaps.length > 0 && (
+                    <RevInfoBlock
+                      tone="warning"
+                      title={overlaps.length === 1 ? `Row ${overlaps[0].cand.inputRow} overlaps an existing rule` : `${overlaps.length} rows overlap an existing rule`}
+                    >
+                      {overlaps.length === 1 ? "It" : "They"} will still be imported. Where rules overlap, the rule with the higher priority applies.
+                    </RevInfoBlock>
+                  )}
+                  {mode === "create" ? (
+                    <RevTable
+                      caption="Rows to import"
+                      columns={IMPORT_COLUMNS}
+                      rows={pageOf(readySorted, pageSafe).map(({ cand, cls }) => ({
+                        key: cand.inputRow,
+                        cells: {
+                          row: { text: cand.inputRow },
+                          campaign: {
+                            text: cand.campaignName,
+                            description: `${overlapSet.has(cand.inputRow) && cls.relatedRuleId ? `Overlaps ${cls.relatedRuleId}. ` : ""}${commaList(cls.scopeLabel)}`,
+                          },
+                          commission: { text: `${cand.rate.toFixed(1)}%` },
+                        },
+                      }))}
+                    />
+                  ) : (
+                    <RevTable
+                      caption="Rules to update"
+                      columns={UPDATE_COLUMNS}
+                      rows={pageOf(updateValues, pageSafe).map((u) => ({
+                        key: u.ruleId,
+                        cells: {
+                          rule: { text: u.ruleId, description: rules.find((x) => x.id === u.ruleId)?.name },
+                          change: { text: commaList(describeUpdate(u)).replace(/ → /g, " to ") },
+                        },
+                      }))}
+                    />
+                  )}
+                  <TablePager page={pageSafe} total={listTotal} onChange={setListPage} />
+                </CheckSection>
+              </>
             )}
-
-            <Helper>
-              {importCount === 0
-                ? "There's nothing to import from this file. Go back to upload a corrected one."
-                : `Nothing is ${mode === "create" ? "created" : "updated"} until you import. You can still go back or cancel.`}
-            </Helper>
           </>
         )}
 

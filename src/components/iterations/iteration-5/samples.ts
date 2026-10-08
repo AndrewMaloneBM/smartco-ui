@@ -17,23 +17,23 @@ const HEADER = CREATE_TEMPLATE_COLUMNS.join(",");
 
 /** 6 rows, all valid, no overlap or conflict with the seed rules. */
 const CLEAN = `${HEADER}
-Back to school — FR,FR,Laptops,,GreenMobile,EXCELLENT,Apple,Normal,8.5,2026-10-15,2026-11-15
-Back to school — GB,GB,Laptops,,ReFone,GOOD,,,9,2026-10-15,2026-11-15
-Autumn audio — IT,IT,Audio,,CircularTech,,Sony,,7.5,2026-10-20,2026-12-31
-Autumn audio — PT,PT,Audio,,PixelRevive,,,,7.5,2026-10-20,2026-12-31
-Battery push — FR,FR,,iPhone14-128,BatteryKings,GOOD,Apple,New Battery,12,2026-11-01,
-Tablet refresh — GB,GB,,iPadAir-2022,GreenMobile,,,,10,2026-11-01,2026-12-31`;
+Back to school - FR,FR,Laptops,,GreenMobile,EXCELLENT,Apple,Normal,8.5,2026-10-15,2026-11-15
+Back to school - GB,GB,Laptops,,ReFone,GOOD,,,9,2026-10-15,2026-11-15
+Autumn audio - IT,IT,Audio,,CircularTech,,Sony,,7.5,2026-10-20,2026-12-31
+Autumn audio - PT,PT,Audio,,PixelRevive,,,,7.5,2026-10-20,2026-12-31
+Battery push - FR,FR,,iPhone14-128,BatteryKings,GOOD,Apple,New Battery,12,2026-11-01,
+Tablet refresh - GB,GB,,iPadAir-2022,GreenMobile,,,,10,2026-11-01,2026-12-31`;
 
 /** 8 rows: 3 blocked (rows 3, 5, 7) and 1 warning (row 6, rate outside the band). */
 const BLOCKED = `${HEADER}
-Back to school — FR,FR,Laptops,,GreenMobile,EXCELLENT,Apple,Normal,8.5,2026-10-15,2026-11-15
-Back to school — GB,GB,Laptops,,ReFone,GOOD,,,9,2026-10-15,2026-11-15
-Back to school — IT,IT,Laptops,,CircularTech,,,,nine,2026-10-15,2026-11-15
-Autumn audio — IT,IT,Audio,,CircularTech,,Sony,,7.5,2026-10-20,2026-12-31
-Autumn audio — PT,PT,Audio,,PixelRevive,,,,7.5,2026-12-31,2026-10-20
-Battery push — FR,FR,,iPhone14-128,BatteryKings,GOOD,Apple,New Battery,25,2026-11-01,
-Tablet refresh — UK,UK,Tablets,,GreenMobile,,,,10,2026-11-01,2026-12-31
-Tablet refresh — GB,GB,,iPadAir-2022,GreenMobile,,,,10,2026-11-01,2026-12-31`;
+Back to school - FR,FR,Laptops,,GreenMobile,EXCELLENT,Apple,Normal,8.5,2026-10-15,2026-11-15
+Back to school - GB,GB,Laptops,,ReFone,GOOD,,,9,2026-10-15,2026-11-15
+Back to school - IT,IT,Laptops,,CircularTech,,,,nine,2026-10-15,2026-11-15
+Autumn audio - IT,IT,Audio,,CircularTech,,Sony,,7.5,2026-10-20,2026-12-31
+Autumn audio - PT,PT,Audio,,PixelRevive,,,,7.5,2026-12-31,2026-10-20
+Battery push - FR,FR,,iPhone14-128,BatteryKings,GOOD,Apple,New Battery,25,2026-11-01,
+Tablet refresh - UK,UK,Tablets,,GreenMobile,,,,10,2026-11-01,2026-12-31
+Tablet refresh - GB,GB,,iPadAir-2022,GreenMobile,,,,10,2026-11-01,2026-12-31`;
 
 /**
  * 8 rows: 3 overlaps (rows 2, 4, 6 — a market-wide rule already exists in BE, ES
@@ -41,14 +41,14 @@ Tablet refresh — GB,GB,,iPadAir-2022,GreenMobile,,,,10,2026-11-01,2026-12-31`;
  * RULE-2072).
  */
 const CONFLICTS = `${HEADER}
-Back to school — FR,FR,Laptops,,GreenMobile,EXCELLENT,Apple,Normal,8.5,2026-10-15,2026-11-15
-Back to school — BE,BE,,iPhone14-128,,,,,8.5,2026-10-15,2026-11-15
-Premium audio — FR,FR,Audio,,,,,,9,2026-10-15,2026-11-15
-Autumn deals — ES,ES,,GalaxyS23-256,,,,,7.5,2026-10-20,2026-12-31
-Autumn audio — PT,PT,Audio,,PixelRevive,,,,7.5,2026-10-20,2026-12-31
-Autumn deals — NL,NL,,PixelBuds-Pro,,,,,7.5,2026-10-20,2026-12-31
-Tablets push — ES,ES,Tablets,,,,,,11,2026-11-01,2026-12-31
-Tablet refresh — GB,GB,,iPadAir-2022,GreenMobile,,,,10,2026-11-01,2026-12-31`;
+Back to school - FR,FR,Laptops,,GreenMobile,EXCELLENT,Apple,Normal,8.5,2026-10-15,2026-11-15
+Back to school - BE,BE,,iPhone14-128,,,,,8.5,2026-10-15,2026-11-15
+Premium audio - FR,FR,Audio,,,,,,9,2026-10-15,2026-11-15
+Autumn deals - ES,ES,,GalaxyS23-256,,,,,7.5,2026-10-20,2026-12-31
+Autumn audio - PT,PT,Audio,,PixelRevive,,,,7.5,2026-10-20,2026-12-31
+Autumn deals - NL,NL,,PixelBuds-Pro,,,,,7.5,2026-10-20,2026-12-31
+Tablets push - ES,ES,Tablets,,,,,,11,2026-11-01,2026-12-31
+Tablet refresh - GB,GB,,iPadAir-2022,GreenMobile,,,,10,2026-11-01,2026-12-31`;
 
 /** A file exported from another tool: none of the template columns are present. */
 const WRONG_COLUMNS = `seller,deal_campaign,month,orders,gmv
