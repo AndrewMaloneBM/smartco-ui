@@ -88,8 +88,8 @@ interface Submitted {
 
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
-/** 🚀 Components "Tag" (size=large): 24px tall, 4px side padding, 2px radius. */
-const TAG_STYLE: React.CSSProperties = { borderRadius: REV_RADIUS.xs, padding: "0 4px", lineHeight: "24px" };
+/** 🚀 Components "Tag" (size=small): 16px tall, 2px side padding, 2px radius (RevTag.md small spec). */
+const TAG_STYLE: React.CSSProperties = { borderRadius: REV_RADIUS.xs, padding: "0 2px", lineHeight: "16px" };
 
 /** Number of rules one CSV row fans out to (one per market × category × grade × brand × offer type × seller). */
 function ruleCount(c: CandidateRow): number {
@@ -116,7 +116,7 @@ function describeUpdate(u: UpdateValue): string {
 
 function SectionTitle({ children }: { children: ReactNode }) {
   return (
-    <h3 className="text-base font-semibold leading-6" style={{ color: "var(--rev-text-hi)" }}>
+    <h3 className="text-sm font-semibold leading-5" style={{ color: "var(--rev-text-hi)" }}>
       {children}
     </h3>
   );
@@ -462,16 +462,16 @@ export function ImportCsvDrawer({
           <>
             <section className="flex flex-col gap-3">
               <div className="flex flex-col">
-                <span className="break-all text-base font-semibold leading-6" style={{ color: "var(--rev-text-hi)" }}>{fileName}</span>
+                <span className="break-all text-sm font-semibold leading-5" style={{ color: "var(--rev-text-hi)" }}>{fileName}</span>
                 <Helper>
                   {mode === "create" ? "Create new rules" : "Update existing rules"} · {plural(rowCount, "row")}
                 </Helper>
               </div>
               <div className="flex flex-wrap gap-2">
-                <RevTag variant={importCount > 0 ? "success" : "secondary"} size="large" style={TAG_STYLE}>{importCount} ready to import</RevTag>
-                {blockedRows.length > 0 && <RevTag variant="danger" size="large" style={TAG_STYLE}>{blockedRows.length} blocked</RevTag>}
-                {duplicates.length > 0 && <RevTag variant="info" size="large" style={TAG_STYLE}>{plural(duplicates.length, "possible duplicate")}</RevTag>}
-                {warningRows.length > 0 && <RevTag variant="warning" size="large" style={TAG_STYLE}>{plural(warningRows.length, "warning")}</RevTag>}
+                <RevTag variant={importCount > 0 ? "success" : "secondary"} size="small" style={TAG_STYLE}>{importCount} ready to import</RevTag>
+                {blockedRows.length > 0 && <RevTag variant="danger" size="small" style={TAG_STYLE}>{blockedRows.length} blocked</RevTag>}
+                {duplicates.length > 0 && <RevTag variant="info" size="small" style={TAG_STYLE}>{plural(duplicates.length, "possible duplicate")}</RevTag>}
+                {warningRows.length > 0 && <RevTag variant="warning" size="small" style={TAG_STYLE}>{plural(warningRows.length, "warning")}</RevTag>}
               </div>
             </section>
 
@@ -624,12 +624,12 @@ export function ImportCsvDrawer({
                 <div className="flex flex-wrap gap-2">
                   {isCreate ? (
                     <>
-                      <RevTag variant="success" size="large" style={TAG_STYLE}>{cleanRows} created</RevTag>
-                      {submitted.overlaps.length > 0 && <RevTag variant="warning" size="large" style={TAG_STYLE}>{submitted.overlaps.length} created with overlap</RevTag>}
-                      {skipped > 0 && <RevTag variant="danger" size="large" style={TAG_STYLE}>{skipped} skipped</RevTag>}
+                      <RevTag variant="success" size="small" style={TAG_STYLE}>{cleanRows} created</RevTag>
+                      {submitted.overlaps.length > 0 && <RevTag variant="warning" size="small" style={TAG_STYLE}>{submitted.overlaps.length} created with overlap</RevTag>}
+                      {skipped > 0 && <RevTag variant="danger" size="small" style={TAG_STYLE}>{skipped} skipped</RevTag>}
                     </>
                   ) : (
-                    <RevTag variant="success" size="large" style={TAG_STYLE}>{submitted.importCount} updated</RevTag>
+                    <RevTag variant="success" size="small" style={TAG_STYLE}>{submitted.importCount} updated</RevTag>
                   )}
                 </div>
               </section>
