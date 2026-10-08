@@ -43,8 +43,10 @@ import {
  * Three steps, each mapped to the PRD's user stories:
  * 1. Upload  — pick create/update, download the template, select the file. A file
  *              with the wrong columns fails here, before any row is checked.
- * 2. Check   — validation (ready vs blocked rows) + review of overlaps and strict
- *              conflicts, all before confirming. Confirm imports the ready rows.
+ * 2. Check   — CSV formatting validation only (blocked rows, warnings, possible
+ *              re-import duplicates), per the PRD: no conflict checking
+ *              pre-submit. Conflicts are detected during processing and surface
+ *              as skipped rows in Results. Confirm imports the ready rows.
  * 3. Results — progress while the task runs, then the outcome per affected row,
  *              with links to export the results and to the task in Tasks.
  */
@@ -468,8 +470,6 @@ export function ImportCsvDrawer({
               <div className="flex flex-wrap gap-2">
                 <RevTag variant={importCount > 0 ? "success" : "secondary"} size="large" style={TAG_STYLE}>{importCount} ready to import</RevTag>
                 {blockedRows.length > 0 && <RevTag variant="danger" size="large" style={TAG_STYLE}>{blockedRows.length} blocked</RevTag>}
-                {strictConflicts.length > 0 && <RevTag variant="danger" size="large" style={TAG_STYLE}>{plural(strictConflicts.length, "strict conflict")}</RevTag>}
-                {overlaps.length > 0 && <RevTag variant="warning" size="large" style={TAG_STYLE}>{plural(overlaps.length, "overlap")}</RevTag>}
                 {duplicates.length > 0 && <RevTag variant="info" size="large" style={TAG_STYLE}>{plural(duplicates.length, "possible duplicate")}</RevTag>}
                 {warningRows.length > 0 && <RevTag variant="warning" size="large" style={TAG_STYLE}>{plural(warningRows.length, "warning")}</RevTag>}
               </div>
@@ -477,7 +477,7 @@ export function ImportCsvDrawer({
 
             {nothingFlagged && (
               <RevInfoBlock tone="success" title={`${importCount === 1 ? "The row is" : `All ${importCount} rows are`} ready to import`}>
-                {mode === "create" ? "No blocked rows, overlaps or strict conflicts found." : "No blocked rows found."}
+                No blocked rows found.
               </RevInfoBlock>
             )}
 
@@ -493,43 +493,10 @@ export function ImportCsvDrawer({
               </section>
             )}
 
-            {strictConflicts.length > 0 && (
-              <section className="flex flex-col gap-3">
-                <RevInfoBlock
-                  tone="danger"
-                  title={`${plural(strictConflicts.length, "row")} ${strictConflicts.length === 1 ? "is" : "are"} in strict conflict`}
-                >
-                  An identical rule already exists, so {strictConflicts.length === 1 ? "this row" : "these rows"} won&apos;t be created.
-                </RevInfoBlock>
-                <RevTextList
-                  items={strictConflicts.map(({ cand, cls }) => ({
-                    key: cand.inputRow,
-                    icon: <IconBlocked />,
-                    title: rowLabel(cand.inputRow),
-                    description: `Identical to ${cls.relatedRuleId} · ${cls.scopeLabel}`,
-                  }))}
-                />
-              </section>
-            )}
-
-            {overlaps.length > 0 && (
-              <section className="flex flex-col gap-3">
-                <RevInfoBlock
-                  tone="warning"
-                  title={`${plural(overlaps.length, "row")} ${overlaps.length === 1 ? "overlaps" : "overlap"} an existing rule`}
-                >
-                  {overlaps.length === 1 ? "It" : "They"}&apos;ll still be created. Where rules overlap, the rule with the higher priority applies.
-                </RevInfoBlock>
-                <RevTextList
-                  items={overlaps.map(({ cand, cls }) => ({
-                    key: cand.inputRow,
-                    icon: <IconWarning />,
-                    title: rowLabel(cand.inputRow),
-                    description: `Overlaps ${cls.relatedRuleId} · ${cls.scopeLabel}`,
-                  }))}
-                />
-              </section>
-            )}
+            {/* Conflicts (identical rules / overlaps) are NOT checked here: the
+                backend validates CSV formatting only, and conflict detection
+                happens during processing. They surface as skipped rows in the
+                Results step. */}
 
             {duplicates.length > 0 && (
               <section className="flex flex-col gap-3">
