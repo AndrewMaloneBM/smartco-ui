@@ -476,9 +476,15 @@ export function ImportCsvDrawer({
             </section>
 
             {nothingFlagged && (
-              <RevInfoBlock tone="success" title={`${importCount === 1 ? "The row is" : `All ${importCount} rows are`} ready to import`}>
-                No blocked rows found.
-              </RevInfoBlock>
+              <div className="flex items-center gap-2" role="status">
+                <IconCheckInCircle style={{ color: "var(--rev-success)" }} />
+                <span className="text-sm font-semibold leading-5" style={{ color: "var(--rev-text-hi)" }}>
+                  {importCount === 1 ? "The row is" : `All ${importCount} rows are`} ready to import
+                </span>
+                <span className="text-sm leading-5" style={{ color: "var(--rev-text-low)" }}>
+                  · No blocked rows found.
+                </span>
+              </div>
             )}
 
             {blockedRows.length > 0 && (
